@@ -3,3 +3,11 @@
 ################################################################################
 
 /PdfRepresantation/bin/Debug/netstandard2.0
+/.vs
+/PdfRepresantation/obj
+/PdfRepresantation.Client/bin/Debug/netstandard2.0
+/PdfRepresantation.Client/obj
+/PdfRepresantation.Server/obj
+/PdfRepresantation.Test/bin/Debug/netcoreapp2.1
+/PdfRepresantation.Test/obj
+/.idea/.idea.PdfRepresantation
