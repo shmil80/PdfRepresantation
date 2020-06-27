@@ -46,18 +46,18 @@ namespace PdfRepresantation
                     sb.Append(" L");
                 else
                 {
-                    if (line.CurveControlPoint2 != null)
+                    if (line.CurveControlPoint2 == null)
+                    {
+                        sb.Append(" Q");
+                        AddPoint(line.CurveControlPoint1, sb);
+                        sb.Append(",");
+                    }
+                    else
                     {
                         sb.Append(" C");
                         AddPoint(line.CurveControlPoint1, sb);
                         sb.Append(",");
                         AddPoint(line.CurveControlPoint2, sb);
-                        sb.Append(",");
-                    }
-                    else
-                    {
-                        sb.Append(" Q");
-                        AddPoint(line.CurveControlPoint1, sb);
                         sb.Append(",");
                     }
                 }

@@ -2,12 +2,14 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/PdfRepresantation/bin/Debug/netstandard2.0
 /.vs
+/.idea
+/PdfRepresantation/bin/
 /PdfRepresantation/obj
-/PdfRepresantation.Client/bin/Debug/netstandard2.0
+/PdfRepresantation.Client/bin/
 /PdfRepresantation.Client/obj
+/PdfRepresantation.Server/bin/
 /PdfRepresantation.Server/obj
-/PdfRepresantation.Test/bin/Debug/netcoreapp2.1
+/PdfRepresantation.Test/bin/
 /PdfRepresantation.Test/obj
-/.idea/.idea.PdfRepresantation
+/PdfRepresantation.Test/Results

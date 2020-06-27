@@ -5,13 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
 namespace PdfRepresantation.Test
 {
-    
+
     //test the conversion
     //for those tests to run you need to put pdf files in the "File" direcory
     //and the result will be written in the "results" directory
@@ -25,18 +24,18 @@ namespace PdfRepresantation.Test
         {
             if (Directory.GetCurrentDirectory().Contains("netcoreapp"))
                 Directory.SetCurrentDirectory(Path.Combine("..", "..", ".."));
-            Log.logger = new ConsoleLogger{DebugSupported = true,InfoSupported = true,ErrorSupported = true};
+            Log.logger = new ConsoleLogger { DebugSupported = true, InfoSupported = true, ErrorSupported = true };
         }
         [TestMethod]
         public void ConvertToHtml()
         {
-            var paths =new List<string>();
-            var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig{UseCanvas = false});
+            var paths = new List<string>();
+            var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig { UseCanvas = false });
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-//                if(name!="building")
-//                    continue;
+                //                if(name!="building")
+                //                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);
@@ -46,38 +45,37 @@ namespace PdfRepresantation.Test
             File.WriteAllText("urls.js", $"urls={json};");
 
         }
-
-  
-        private PdfRepresantationClient client = new PdfRepresantationClient();
-
-        //for this test you need to run the server first
         [TestMethod]
-        public async Task ServerTestHtml()
+        public void ConvertToText()
         {
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-                //if(name!="pdf-001")
-                //    continue;
-                var buffer = File.ReadAllBytes(file.FullName);
-                var htmlResult = await client.ConvertToHtmlAsync(buffer);
-                File.WriteAllText(Path.Combine(targetDir, name + ".html"), htmlResult);
+                //                if(name!="building")
+                //                    continue;
+                var details = PdfDetailsFactory.Create(file.FullName);
+                var target = Path.Combine(targetDir, name + ".txt");
+                File.WriteAllText(target, details.ToString());
             }
-        }
 
-        //for this test you need to run the server first
+        }
         [TestMethod]
-        public async Task ServerTestText()
+        public void ConvertToImage()
         {
+            var imageWriter = new PdfImageWriter();
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-                //if(name!="pdf-001")
-                //    continue;
-                var buffer = File.ReadAllBytes(file.FullName);
-                var textResult = await client.ConvertToTextAsync(buffer);
-                File.WriteAllText(Path.Combine(targetDir, name + ".txt"), textResult);
+                //                if(name!="building")
+                //                    continue;
+                var details = PdfDetailsFactory.Create(file.FullName);
+                var target = Path.Combine(targetDir, name + ".png");
+
+                imageWriter.SaveAsImage(details, target);
             }
+
         }
+
+
     }
 }

@@ -1,5 +1,6 @@
-﻿using System.Drawing;
-using System.Drawing.Drawing2D;
+﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 
@@ -7,53 +8,75 @@ namespace PdfRepresantation
 {
     public class PdfImageWriter
     {
-        public Bitmap[] ConvertToImage(PdfDetails pdf)
+        readonly PdfShapeImageWriter shapeWriter;
+        readonly PdfImageImageWriter imageWriter;
+        readonly PdfLineImageWriter lineWriter;
+
+        public PdfImageWriter()
+        {
+            shapeWriter = CreateShaperWriter();
+            lineWriter = CreateLineWriter();
+            imageWriter = CreateImageWriter();
+        }
+
+        protected virtual PdfShapeImageWriter CreateShaperWriter() => new PdfShapeImageWriter();
+        protected virtual PdfLineImageWriter CreateLineWriter() => new PdfLineImageWriter();
+        protected virtual PdfImageImageWriter CreateImageWriter() => new PdfImageImageWriter();
+        public Bitmap[] ConvertToImages(PdfDetails pdf)
         {
             return pdf.Pages
                 .Select(ConvertToImage)
                 .ToArray();
         }
-        public Bitmap ConvertToImage(PdfPageDetails page)
+
+        public Bitmap ConvertToImage(PdfDetails pdf)
         {
-            var bitmap = new Bitmap((int)page.Width,(int)page.Height);
-            var graphics=Graphics.FromImage(bitmap);
-            foreach (var shape in page.Shapes)
+            var bitmap = new Bitmap((int)pdf.Pages.Max(p => p.Width), (int)pdf.Pages.Sum(p => p.Height));
+            var graphics = Graphics.FromImage(bitmap);
+            float top = 0;
+            foreach (var page in pdf.Pages)
             {
-                DrawShape(graphics, page, shape);
+                Draw(graphics, page, top);
+                top += page.Height;
             }
-            foreach (var image in page.Images)
-            {
-                DrawImage(graphics, page, image);
-            }
-            foreach (var line in page.Lines)
-            {
-                DrawLine(graphics, page, line);
-            }
+
             return bitmap;
         }
 
-        private void DrawLine(Graphics graphics, PdfPageDetails page, PdfTextLineDetails line)
+        public Bitmap ConvertToImage(PdfPageDetails page)
         {
-            throw new System.NotImplementedException();
+            var bitmap = new Bitmap((int)page.Width, (int)page.Height);
+            var graphics = Graphics.FromImage(bitmap);
+            Draw(graphics, page, 0);
+            return bitmap;
         }
 
-        private void DrawImage(Graphics graphics, PdfPageDetails page, PdfImageDetails image)
+        public void Draw(Graphics graphics, PdfPageDetails page, float top)
         {
-            Image bitmap = Bitmap.FromStream(new MemoryStream(image.Buffer));
-            RectangleF rect = new RectangleF(image.Left, image.Top, image.Width, image.Height);
-            graphics.DrawImage(bitmap, rect);
+            foreach (var shape in page.Shapes)
+            {
+                shapeWriter.DrawShape(graphics, page, shape, top);
+            }
+
+            foreach (var image in page.Images)
+            {
+                imageWriter.DrawImage(graphics, page, image, top);
+            }
+            lineWriter.Init(graphics);
+            foreach (var line in page.Lines)
+            {
+               lineWriter. DrawLine(graphics, page, line, top);
+            }
         }
 
-        private void DrawShape(Graphics graphics, PdfPageDetails page, ShapeDetails shape)
+        public void SaveAsImage(PdfDetails details, string path)
         {
-            GraphicsPath path = new GraphicsPath();
-            if (shape.EvenOddRule)
-                path.FillMode = FillMode.Alternate;
-            else
-                path.FillMode = FillMode.Winding;
-            var simpleColor = shape.FillColor as SimpleColorDetails;
-            Brush brush = new SolidBrush(simpleColor.Color);
-            graphics.FillPath(brush, path);
+            var image = ConvertToImage(details);
+            image.Save(path);
+            //using (var stream = new FileStream(path,FileMode.Create))
+            //{
+            //    image.Save(stream, ImageFormat.Png);
+            //}
         }
     }
 }
