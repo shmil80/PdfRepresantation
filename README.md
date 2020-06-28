@@ -1,4 +1,6 @@
-PdfToHtml is a simple tool to convert pdf to html or text in C# based on itext7 package
+PdfRepresantation is a simple tool to get the details of a pdf, and convert it to html, text or image. 
+
+It is writen in C# based on itext7 package 
 
 usage:
 ```cs
@@ -6,6 +8,7 @@ usage:
       PdfDetails pdf = PdfDetailsFactory.Create(path);
       string text = pdf.ToString();
       string html = new PdfHtmlWriter().ConvertPdf(pdf);
+      Bitmap bitmap = new PdfImageWriter().ConvertToImage(pdf);           
 ```
 
 PdfToHtml is licensed as <a href="/License.md">AGPL</a>
