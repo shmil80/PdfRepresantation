@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace PdfRepresantation
         protected virtual PdfShapeImageWriter CreateShaperWriter() => new PdfShapeImageWriter();
         protected virtual PdfLineImageWriter CreateLineWriter() => new PdfLineImageWriter();
         protected virtual PdfImageImageWriter CreateImageWriter() => new PdfImageImageWriter();
+
         public Bitmap[] ConvertToImages(PdfDetails pdf)
         {
             return pdf.Pages
@@ -31,11 +33,22 @@ namespace PdfRepresantation
 
         public Bitmap ConvertToImage(PdfDetails pdf)
         {
-            var bitmap = new Bitmap((int)pdf.Pages.Max(p => p.Width), (int)pdf.Pages.Sum(p => p.Height));
+            var width = pdf.Pages.Max(p => p.Width);
+            var height = pdf.Pages.Sum(p => p.Height+1)-1;
+            var bitmap = new Bitmap((int) width, (int) height);
             var graphics = Graphics.FromImage(bitmap);
+            var penSeparator = new Pen(Color.Black, 1) {DashStyle = DashStyle.Dash};
+
             float top = 0;
-            foreach (var page in pdf.Pages)
+            for (var index = 0; index < pdf.Pages.Count; index++)
             {
+                var page = pdf.Pages[index];
+                if (index > 0)
+                {
+                    graphics.DrawLine(penSeparator, 0, top, width, top);
+                    top++;
+                }
+
                 Draw(graphics, page, top);
                 top += page.Height;
             }
@@ -45,7 +58,7 @@ namespace PdfRepresantation
 
         public Bitmap ConvertToImage(PdfPageDetails page)
         {
-            var bitmap = new Bitmap((int)page.Width, (int)page.Height);
+            var bitmap = new Bitmap((int) page.Width, (int) page.Height);
             var graphics = Graphics.FromImage(bitmap);
             Draw(graphics, page, 0);
             return bitmap;
@@ -62,10 +75,11 @@ namespace PdfRepresantation
             {
                 imageWriter.DrawImage(graphics, page, image, top);
             }
+
             lineWriter.Init(graphics);
             foreach (var line in page.Lines)
             {
-               lineWriter. DrawLine(graphics, page, line, top);
+                lineWriter.DrawLine(graphics, page, line, top);
             }
         }
 
