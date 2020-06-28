@@ -64,7 +64,7 @@ namespace PdfRepresantation
                 style = FontStyle.Italic;
             else
                 style = FontStyle.Regular;
-            var font = new Font(text.Font.BasicFontFamily, text.FontSize, style);
+            var font = new Font(text.Font.BasicFontFamily, text.FontSize, style,GraphicsUnit.Pixel);
             return font;
         }
     }
