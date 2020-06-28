@@ -11,4 +11,4 @@ usage:
       Bitmap bitmap = new PdfImageWriter().ConvertToImage(pdf);           
 ```
 
-PdfToHtml is licensed as <a href="/License.md">AGPL</a>
+PdfRepresantation is licensed as <a href="/License.md">AGPL</a>
