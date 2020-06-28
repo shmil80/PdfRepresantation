@@ -11,26 +11,36 @@ namespace PdfRepresantation
             graphics.SmoothingMode = SmoothingMode.HighQuality;
             graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
-
         }
+
         public void DrawLine(Graphics graphics, PdfPageDetails page, PdfTextLineDetails line, float top)
         {
             top += line.Top;
-           var left = line.Left;        
+            var left = line.Left;
             var right = line.Right;
             foreach (var text in line.Texts)
             {
                 Font font = CreateFont(text);
                 Brush brush = new SolidBrush(text.Stroke.MainColor ?? Color.Black);
-                var width = graphics.MeasureString(text.Value, font, 0, StringFormat.GenericTypographic).Width;
+                float width;
+                if (string.IsNullOrWhiteSpace(text.Value))
+                {
+                    var point = graphics.MeasureString(".", font, 0, StringFormat.GenericDefault).Width;
+                    width = graphics.MeasureString("." + text.Value + ".", font, 0, StringFormat.GenericTypographic)
+                                .Width - point * 2;
+                }
+                else
+                    width = graphics.MeasureString(text.Value, font, 0, StringFormat.GenericTypographic).Width;
+
                 if (page.RightToLeft)
                 {
                     right += width;
-                    graphics.DrawString(text.Value, font, brush, page.Width - right, top);
+                    graphics.DrawString(text.Value, font, brush, page.Width - right, top,
+                        StringFormat.GenericTypographic);
                 }
                 else
                 {
-                    graphics.DrawString(text.Value, font, brush, left, top);
+                    graphics.DrawString(text.Value, font, brush, left, top, StringFormat.GenericTypographic);
                     left += width;
                 }
             }
