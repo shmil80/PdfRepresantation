@@ -32,7 +32,7 @@ namespace PdfRepresantation
             font.FontFamily = fontName;
             var basicFontFamily = fontFamilyRegex.Replace(fontName, "");
             basicFontFamily = new string(SpaceInCamelCase(basicFontFamily).ToArray());
-            font.BasicFontFamily = basicFontFamily;
+            font.BasicFontFamily = basicFontFamily.Trim();
             font.Bold = pdfFont.GetFontProgram().GetFontNames().GetFontWeight() >= FontWeights.BOLD ||
                         fontName.Contains("bold") || fontName.Contains("Bold");
             font.Italic = fontName.Contains("italic") || fontName.Contains("Italic");
@@ -63,7 +63,7 @@ namespace PdfRepresantation
 
             var ctm = textRenderInfo.GetGraphicsState().GetCtm();
             var heightFont = ctm.Get(Matrix.I22);
-            if (heightFont > 0.99 && heightFont < 1.01)
+            if (heightFont > 0.99 && heightFont < 1.01&&height>0)
             {
                 if (fontSize > height * 1.3)
                 {
