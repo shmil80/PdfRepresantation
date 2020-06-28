@@ -1,16 +1,6 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.vs
+﻿/.vs
 /.idea
-/PdfRepresantation/bin/
-/PdfRepresantation/obj
-/PdfRepresantation.Client/bin/
-/PdfRepresantation.Client/obj
-/PdfRepresantation.Server/bin/
-/PdfRepresantation.Server/obj
-/PdfRepresantation.Test/bin/
-/PdfRepresantation.Test/obj
+/*/bin
+/*/obj
 /PdfRepresantation.Test/Files
 /PdfRepresantation.Test/Results
