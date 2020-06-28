@@ -13,6 +13,11 @@ namespace PdfRepresantation
             graphics.CompositingQuality = CompositingQuality.HighQuality;
         }
 
+        protected virtual StringFormat Format =>StringFormat.GenericTypographic;
+        protected virtual float Measure(Graphics graphics, string s, Font font)
+        {
+            return graphics.MeasureString(s, font, 0, Format).Width ;
+        }
         public void DrawLine(Graphics graphics, PdfPageDetails page, PdfTextLineDetails line, float top)
         {
             top += line.Top;
@@ -25,27 +30,27 @@ namespace PdfRepresantation
                 float width;
                 if (string.IsNullOrWhiteSpace(text.Value))
                 {
-                    var point = graphics.MeasureString(".", font, 0, StringFormat.GenericTypographic).Width;
-                    width = graphics.MeasureString("." + text.Value + ".", font, 0, StringFormat.GenericTypographic)
-                                .Width - point * 2;
+                    var point = Measure(graphics, ".", font);
+                    width = Measure(graphics, "." + text.Value + ".", font) - point * 2;
                 }
                 else
-                    width = graphics.MeasureString(text.Value, font, 0, StringFormat.GenericTypographic).Width;
+                    width =Measure(graphics,text.Value, font);
 
-                width--;
                 if (page.RightToLeft)
                 {
                     right += width;
+
                     graphics.DrawString(text.Value, font, brush, page.Width - right, top,
-                        StringFormat.GenericTypographic);
+                        Format);
                 }
                 else
                 {
-                    graphics.DrawString(text.Value, font, brush, left, top, StringFormat.GenericTypographic);
+                    graphics.DrawString(text.Value, font, brush, left, top, Format);
                     left += width;
                 }
             }
         }
+
 
         protected virtual Font CreateFont(PdfTextResult text)
         {
@@ -59,7 +64,7 @@ namespace PdfRepresantation
                 style = FontStyle.Italic;
             else
                 style = FontStyle.Regular;
-            var font = new Font(text.Font.BasicFontFamily, text.FontSize - 1, style);
+            var font = new Font(text.Font.BasicFontFamily, text.FontSize, style);
             return font;
         }
     }
