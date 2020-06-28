@@ -25,13 +25,14 @@ namespace PdfRepresantation
                 float width;
                 if (string.IsNullOrWhiteSpace(text.Value))
                 {
-                    var point = graphics.MeasureString(".", font, 0, StringFormat.GenericDefault).Width;
+                    var point = graphics.MeasureString(".", font, 0, StringFormat.GenericTypographic).Width;
                     width = graphics.MeasureString("." + text.Value + ".", font, 0, StringFormat.GenericTypographic)
                                 .Width - point * 2;
                 }
                 else
                     width = graphics.MeasureString(text.Value, font, 0, StringFormat.GenericTypographic).Width;
 
+                width--;
                 if (page.RightToLeft)
                 {
                     right += width;
