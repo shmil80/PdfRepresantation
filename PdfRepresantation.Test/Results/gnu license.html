@@ -9,7 +9,7 @@
             white-space: nowrap;
         }
         .baseline{vertical-align:baseline;}
-         b{
+         dark{
             background-color: lightgray;
             display: block;
             position: absolute;
@@ -26,6 +26,7 @@
             text-align: center;
             margin:20px auto 0 auto;
         }
+        .header:before{content:var(--text);}
         .article{
             border-style: groove;
             position:relative;
@@ -55,28 +56,31 @@
     </style>    
     <script>
         function init() {
-            var articles=document.getElementsByClassName('article');
-            for (var i = 0; i < articles.length; i++) {
-                var article=articles[i];
-                var articleRect = article.getBoundingClientRect();
-                 function addDarken(span) {
-                    var rect = span.getBoundingClientRect();
-                    var b = document.createElement('b');
-                    b.setAttribute('style', 'width:'+(rect.width|0)+'px;height:'+
-                        (rect.height|0)+'px;top:'+((rect.top - articleRect.top-2)| 0)+'px;left:'
-                        +((rect.left - articleRect.left-2)| 0)+'px' );
-                    article.appendChild(b);
-                }
-                var spans=article.getElementsByClassName('darken');
-                for (var j = 0; j < spans.length; j++) {
-                    addDarken(spans[j]);
+            function BuildDarken(){
+                var articles=document.getElementsByClassName('article');
+                for (var i = 0; i < articles.length; i++) {
+                     var article=articles[i];
+                     var articleRect = article.getBoundingClientRect();
+                     function addDarken(span) {
+                         var rect = span.getBoundingClientRect();
+                         var dark = document.createElement('dark');
+                         dark.setAttribute('style', 'width:'+(rect.width|0)+'px;height:'+
+                             (rect.height|0)+'px;top:'+((rect.top - articleRect.top-2)| 0)+'px;left:'
+                             +((rect.left - articleRect.left-2)| 0)+'px' );
+                         article.appendChild(dark);
+                     }
+                     var spans=article.getElementsByClassName('darken');
+                     for (var j = 0; j < spans.length; j++) {
+                         addDarken(spans[j]);
+                     }
                 }
             }
+            BuildDarken();
         }
     </script>
 </head>
 <body onload="init()">
-    <h2 class="header" style="width: 595px;">Page 1</h2>
+    <h2 class="header" style="width: 595px;--text:'Page 1'"></h2>
     <article class="article" dir="ltr" style="width: 595px;height:842px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font1 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font1 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
@@ -160,7 +164,7 @@
         <path d="M 53.76 713.32 L 56.76 713.32 L 56.76 716.32 L 53.76 716.32" stroke-width="1" fill="#000000" stroke="transparent"/>
         <path d="M 53.76 725.32 L 56.76 725.32 L 56.76 728.32 L 53.76 728.32" stroke-width="1" fill="#000000" stroke="transparent"/>
     </svg>
-    <h2 class="header" style="width: 595px;">Page 2</h2>
+    <h2 class="header" style="width: 595px;--text:'Page 2'"></h2>
     <article class="article" dir="ltr" style="width: 595px;height:842px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font4 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font4 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
@@ -233,7 +237,7 @@
         <path d="M 53.76 537.74 L 56.76 537.74 L 56.76 540.74 L 53.76 540.74" stroke-width="1" fill="#000000" stroke="transparent"/>
         <path d="M 53.76 549.74 L 56.76 549.74 L 56.76 552.74 L 53.76 552.74" stroke-width="1" fill="#000000" stroke="transparent"/>
     </svg>
-    <h2 class="header" style="width: 595px;">Page 3</h2>
+    <h2 class="header" style="width: 595px;--text:'Page 3'"></h2>
     <article class="article" dir="ltr" style="width: 595px;height:842px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font8 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font8 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
@@ -292,7 +296,7 @@
         <path d="M 53.76 227.84 L 56.76 227.84 L 56.76 230.84 L 53.76 230.84" stroke-width="1" fill="#000000" stroke="transparent"/>
         <path d="M 53.76 462.7 L 56.76 462.7 L 56.76 465.7 L 53.76 465.7" stroke-width="1" fill="#000000" stroke="transparent"/>
     </svg>
-    <h2 class="header" style="width: 595px;">Page 4</h2>
+    <h2 class="header" style="width: 595px;--text:'Page 4'"></h2>
     <article class="article" dir="ltr" style="width: 595px;height:842px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font12 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font12 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>

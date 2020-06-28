@@ -41,23 +41,26 @@ namespace PdfRepresantation
         public virtual void AddScriptInit(StringBuilder sb)
         {
             sb.Append(@"
-            var articles=document.getElementsByClassName('article');
-            for (var i = 0; i < articles.length; i++) {
-                var article=articles[i];
-                var articleRect = article.getBoundingClientRect();
-                 function addDarken(span) {
-                    var rect = span.getBoundingClientRect();
-                    var b = document.createElement('b');
-                    b.setAttribute('style', 'width:'+(rect.width|0)+'px;height:'+
-                        (rect.height|0)+'px;top:'+((rect.top - articleRect.top-2)| 0)+'px;left:'
-                        +((rect.left - articleRect.left-2)| 0)+'px' );
-                    article.appendChild(b);
+            function BuildDarken(){
+                var articles=document.getElementsByClassName('article');
+                for (var i = 0; i < articles.length; i++) {
+                     var article=articles[i];
+                     var articleRect = article.getBoundingClientRect();
+                     function addDarken(span) {
+                         var rect = span.getBoundingClientRect();
+                         var dark = document.createElement('dark');
+                         dark.setAttribute('style', 'width:'+(rect.width|0)+'px;height:'+
+                             (rect.height|0)+'px;top:'+((rect.top - articleRect.top-2)| 0)+'px;left:'
+                             +((rect.left - articleRect.left-2)| 0)+'px' );
+                         article.appendChild(dark);
+                     }
+                     var spans=article.getElementsByClassName('darken');
+                     for (var j = 0; j < spans.length; j++) {
+                         addDarken(spans[j]);
+                     }
                 }
-                var spans=article.getElementsByClassName('darken');
-                for (var j = 0; j < spans.length; j++) {
-                    addDarken(spans[j]);
-                }
-            }");
+            }
+            BuildDarken();");
         }
 
         public virtual void AddLine(PdfPageDetails page, Dictionary<PdfFontDetails, int> fontRef,
@@ -171,7 +174,7 @@ namespace PdfRepresantation
             white-space: nowrap;
         }
         .baseline{vertical-align:baseline;}
-         b{
+         dark{
             background-color: lightgray;
             display: block;
             position: absolute;

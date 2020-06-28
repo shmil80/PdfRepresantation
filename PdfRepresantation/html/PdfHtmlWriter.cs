@@ -152,7 +152,7 @@ namespace PdfRepresantation
         {
             sb.Append(@"
     <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width))
-                .Append("px;\">Page ").Append(page.PageNumber).Append("</h2>");
+                .Append("px;--text:'Page ").Append(page.PageNumber).Append("'\"></h2>");
         }
 
 
@@ -188,6 +188,7 @@ namespace PdfRepresantation
             text-align: center;
             margin:20px auto 0 auto;
         }
+        .header:before{content:var(--text);}
         .article{
             border-style: groove;
             position:relative;
