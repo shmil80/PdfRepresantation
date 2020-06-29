@@ -15,11 +15,7 @@
             display: block;
             position: absolute;
             z-index: -10;
-         }
-        .image{
-            position:absolute;
-            z-index: -1;
-        }        
+         }        
         .canvas{
             margin: 0 auto 0 auto;
             display: block;
@@ -57,7 +53,50 @@
         .font13{font-family:"Georgia","Georgia"; }
         .font14{font-family:"Georgia-Italic","Georgia";  font-style: italic;}
         .font15{font-family:"Georgia-Bold","Georgia";  font-weight: bold;}
-    </style>    
+    </style>
+    <script>
+        var currentCanvas;
+        function draw(lines,operation,strokeColor, fillColor, lineWidth,fillRule,lineCap) {
+            if (!currentCanvas.getContext)
+                return;
+            var ctx = currentCanvas.getContext('2d');
+            if (lineWidth) 
+                ctx.lineWidth = lineWidth;
+            if (!lineCap) 
+                ctx.lineCap= lineCap;
+            ctx.fillStyle=fillColor||'white';               
+            ctx.strokeStyle=strokeColor||'black';
+            ctx.beginPath();
+            var position={x:'-',y:'-'};
+            var drawLine=function (line) {
+                if (position.x!=line[0]||position.y!=line[1])
+                    ctx.moveTo(line[0], line[1]);
+                switch (line.length)
+                {
+                    case 4:ctx.lineTo(line[2], line[3]);break;
+                    case 6:ctx.quadraticCurveTo(line[2], line[3],line[4], line[5]);break;
+                    case 8:ctx.bezierCurveTo(line[2], line[3],line[4], line[5],line[6], line[7]);break;
+                }
+                position.x=line[line.length-2];
+                position.y=line[line.length-1];
+            }; 
+            for (var i = 0; i < lines.length; i++) 
+                drawLine(lines[i]);
+            switch (operation) {
+                case 1:ctx.stroke();break;
+                case 2:ctx.fill(fillRule);break;
+                case 3:ctx.stroke();
+                   ctx.fill(fillRule);break;
+            }
+        }
+        function drawImage(id,x,y, width, height) {
+            if (!currentCanvas.getContext)
+                return;
+            var ctx = currentCanvas.getContext('2d');
+            var img = document.getElementById(id);
+            ctx.drawImage(img, x, y,width,height);  
+        }       
+    </script>    
     <script>
         function init() {
             function BuildDarken(){
@@ -85,7 +124,39 @@
 </head>
 <body onload="init()">
     <h2 class="header" style="width: 595px;--text:'Page 1'"></h2>
-    <article class="article" dir="ltr" style="width: 595px;height:842px;">
+    <canvas class="canvas" id="canvas-1" style="width: 595px;height:842px;" width=" 595" height="842"></canvas>
+    <script>
+        currentCanvas= document.getElementById('canvas-1');
+        draw([[0,0,792.9999,0],[792.9999,0,792.9999,1122],[792.9999,1122,0,1122]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+        draw([[35.00278,269.8619,560.9972,269.8619],[560.9972,269.8619,560.9972,270.6122],[560.9972,270.6122,35.00278,270.6122]],2,'#999999','#999999',1,'nonzero',null);
+        draw([[35.00278,270.6122,560.9972,270.6122],[560.9972,270.6122,560.9972,271.3625],[560.9972,271.3625,35.00278,271.3625]],2,'#EDEDED','#EDEDED',1,'nonzero',null);
+        draw([[560.2468,270.6122,560.2468,271.3625],[560.2468,271.3625,560.9972,271.3625],[560.9972,271.3625,560.9972,269.8619]],2,'#EDEDED','#EDEDED',1,'nonzero',null);
+        draw([[35.00278,269.8619,35.00278,271.3625],[35.00278,271.3625,35.75314,270.6122],[35.75314,270.6122,35.75314,269.8619]],2,'#999999','#999999',1,'nonzero',null);
+        draw([[53.7615,108.5369,56.76289,108.5369],[56.76289,108.5369,56.76289,111.5383],[56.76289,111.5383,53.7615,111.5383]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,120.5425,56.76289,120.5425],[56.76289,120.5425,56.76289,123.5439],[56.76289,123.5439,53.7615,123.5439]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,132.548,56.76289,132.548],[56.76289,132.548,56.76289,135.5494],[56.76289,135.5494,53.7615,135.5494]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,144.5536,56.76289,144.5536],[56.76289,144.5536,56.76289,147.555],[56.76289,147.555,53.7615,147.555]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,156.5592,56.76289,156.5592],[56.76289,156.5592,56.76289,159.5606],[56.76289,159.5606,53.7615,159.5606]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,168.5648,56.76289,168.5648],[56.76289,168.5648,56.76289,171.5662],[56.76289,171.5662,53.7615,171.5662]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,180.5704,56.76289,180.5704],[56.76289,180.5704,56.76289,183.5718],[56.76289,183.5718,53.7615,183.5718]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,192.5759,56.76289,192.5759],[56.76289,192.5759,56.76289,195.5773],[56.76289,195.5773,53.7615,195.5773]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,204.5815,56.76289,204.5815],[56.76289,204.5815,56.76289,207.5829],[56.76289,207.5829,53.7615,207.5829]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,216.5871,56.76289,216.5871],[56.76289,216.5871,56.76289,219.5885],[56.76289,219.5885,53.7615,219.5885]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,228.5927,56.76289,228.5927],[56.76289,228.5927,56.76289,231.5941],[56.76289,231.5941,53.7615,231.5941]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,240.5983,56.76289,240.5983],[56.76289,240.5983,56.76289,243.5997],[56.76289,243.5997,53.7615,243.5997]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,252.6038,56.76289,252.6038],[56.76289,252.6038,56.76289,255.6052],[56.76289,255.6052,53.7615,255.6052]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,617.2733,56.76289,617.2733],[56.76289,617.2733,56.76289,620.2747],[56.76289,620.2747,53.7615,620.2747]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,629.2789,56.76289,629.2789],[56.76289,629.2789,56.76289,632.2802],[56.76289,632.2802,53.7615,632.2802]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,641.2844,56.76289,641.2844],[56.76289,641.2844,56.76289,644.2858],[56.76289,644.2858,53.7615,644.2858]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,653.29,56.76289,653.29],[56.76289,653.29,56.76289,656.2914],[56.76289,656.2914,53.7615,656.2914]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,665.2956,56.76289,665.2956],[56.76289,665.2956,56.76289,668.297],[56.76289,668.297,53.7615,668.297]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,677.3011,56.76289,677.3011],[56.76289,677.3011,56.76289,680.3026],[56.76289,680.3026,53.7615,680.3026]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,689.3067,56.76289,689.3067],[56.76289,689.3067,56.76289,692.3081],[56.76289,692.3081,53.7615,692.3081]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,701.3123,56.76289,701.3123],[56.76289,701.3123,56.76289,704.3137],[56.76289,704.3137,53.7615,704.3137]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,713.3179,56.76289,713.3179],[56.76289,713.3179,56.76289,716.3193],[56.76289,716.3193,53.7615,716.3193]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,725.3235,56.76289,725.3235],[56.76289,725.3235,56.76289,728.3249],[56.76289,728.3249,53.7615,728.3249]],2,'#000000','#000000',1,'nonzero',null);
+    </script>
+    <article class="article" dir="ltr" style="width: 595px;height:842px;margin-top:-844px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font1 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font1 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
         <div class="line" style="right:486px;left:35px;top:42px;width:73px;bottom:784px" ><span class="baseline font2 bold font-size-16-5" style="color:#000000;">Licenses</span></div>
@@ -138,38 +209,27 @@
         <div class="line" style="right:418px;left:26px;top:817px;width:149px;bottom:16px" ><span class="baseline font1 font-size-8" style="color:#000000;">https://www.gnu.org/licenses/licenses.html</span></div>
         <div class="line" style="right:26px;left:557px;top:817px;width:11px;bottom:16px" ><span class="baseline font1 font-size-8" style="color:#000000;">1/4</span></div>
     </article>
-    <svg class="canvas" height="842" width="595" style="margin-top:-844px;">
-        <path d="M 0 0 L 793 0 L 793 1122 L 0 1122" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-        <path d="M 35 269.86 L 561 269.86 L 561 270.61 L 35 270.61" stroke-width="1" fill="#999999" stroke="transparent"/>
-        <path d="M 35 270.61 L 561 270.61 L 561 271.36 L 35 271.36" stroke-width="1" fill="#EDEDED" stroke="transparent"/>
-        <path d="M 560.25 270.61 L 560.25 271.36 L 561 271.36 L 561 269.86" stroke-width="1" fill="#EDEDED" stroke="transparent"/>
-        <path d="M 35 269.86 L 35 271.36 L 35.75 270.61 L 35.75 269.86" stroke-width="1" fill="#999999" stroke="transparent"/>
-        <path d="M 53.76 108.54 L 56.76 108.54 L 56.76 111.54 L 53.76 111.54" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 120.54 L 56.76 120.54 L 56.76 123.54 L 53.76 123.54" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 132.55 L 56.76 132.55 L 56.76 135.55 L 53.76 135.55" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 144.55 L 56.76 144.55 L 56.76 147.55 L 53.76 147.55" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 156.56 L 56.76 156.56 L 56.76 159.56 L 53.76 159.56" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 168.56 L 56.76 168.56 L 56.76 171.57 L 53.76 171.57" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 180.57 L 56.76 180.57 L 56.76 183.57 L 53.76 183.57" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 192.58 L 56.76 192.58 L 56.76 195.58 L 53.76 195.58" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 204.58 L 56.76 204.58 L 56.76 207.58 L 53.76 207.58" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 216.59 L 56.76 216.59 L 56.76 219.59 L 53.76 219.59" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 228.59 L 56.76 228.59 L 56.76 231.59 L 53.76 231.59" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 240.6 L 56.76 240.6 L 56.76 243.6 L 53.76 243.6" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 252.6 L 56.76 252.6 L 56.76 255.61 L 53.76 255.61" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 617.27 L 56.76 617.27 L 56.76 620.27 L 53.76 620.27" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 629.28 L 56.76 629.28 L 56.76 632.28 L 53.76 632.28" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 641.28 L 56.76 641.28 L 56.76 644.29 L 53.76 644.29" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 653.29 L 56.76 653.29 L 56.76 656.29 L 53.76 656.29" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 665.3 L 56.76 665.3 L 56.76 668.3 L 53.76 668.3" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 677.3 L 56.76 677.3 L 56.76 680.3 L 53.76 680.3" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 689.31 L 56.76 689.31 L 56.76 692.31 L 53.76 692.31" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 701.31 L 56.76 701.31 L 56.76 704.31 L 53.76 704.31" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 713.32 L 56.76 713.32 L 56.76 716.32 L 53.76 716.32" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 725.32 L 56.76 725.32 L 56.76 728.32 L 53.76 728.32" stroke-width="1" fill="#000000" stroke="transparent"/>
-    </svg>
     <h2 class="header" style="width: 595px;--text:'Page 2'"></h2>
-    <article class="article" dir="ltr" style="width: 595px;height:842px;">
+    <canvas class="canvas" id="canvas-2" style="width: 595px;height:842px;" width=" 595" height="842"></canvas>
+    <script>
+        currentCanvas= document.getElementById('canvas-2');
+        draw([[0,0,792.9999,0],[792.9999,0,792.9999,1122],[792.9999,1122,0,1122]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+        draw([[53.7615,34.25244,56.76289,34.25244],[56.76289,34.25244,56.76289,37.25378],[56.76289,37.25378,53.7615,37.25378]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,70.26917,56.76289,70.26917],[56.76289,70.26917,56.76289,73.27057],[56.76289,73.27057,53.7615,73.27057]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,82.27472,56.76289,82.27472],[56.76289,82.27472,56.76289,85.27612],[56.76289,85.27612,53.7615,85.27612]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,170.0656,56.76289,170.0656],[56.76289,170.0656,56.76289,173.0669],[56.76289,173.0669,53.7615,173.0669]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,206.0823,56.76289,206.0823],[56.76289,206.0823,56.76289,209.0837],[56.76289,209.0837,53.7615,209.0837]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,218.0878,56.76289,218.0878],[56.76289,218.0878,56.76289,221.0892],[56.76289,221.0892,53.7615,221.0892]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,329.8898,56.76289,329.8898],[56.76289,329.8898,56.76289,332.8912],[56.76289,332.8912,53.7615,332.8912]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,365.9066,56.76289,365.9066],[56.76289,365.9066,56.76289,368.9079],[56.76289,368.9079,53.7615,368.9079]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,465.7028,56.76289,465.7028],[56.76289,465.7028,56.76289,468.7043],[56.76289,468.7043,53.7615,468.7043]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,501.7197,56.76289,501.7197],[56.76289,501.7197,56.76289,504.721],[56.76289,504.721,53.7615,504.721]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,513.7252,56.76289,513.7252],[56.76289,513.7252,56.76289,516.7266],[56.76289,516.7266,53.7615,516.7266]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,525.7308,56.76289,525.7308],[56.76289,525.7308,56.76289,528.7321],[56.76289,528.7321,53.7615,528.7321]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,537.7364,56.76289,537.7364],[56.76289,537.7364,56.76289,540.7377],[56.76289,540.7377,53.7615,540.7377]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,549.7419,56.76289,549.7419],[56.76289,549.7419,56.76289,552.7433],[56.76289,552.7433,53.7615,552.7433]],2,'#000000','#000000',1,'nonzero',null);
+    </script>
+    <article class="article" dir="ltr" style="width: 595px;height:842px;margin-top:-844px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font4 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font4 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
         <div class="line" style="right:51px;left:65px;top:28px;width:478px;bottom:802px" ><span class="baseline font5 font-size-11" style="color:#000000;">The GNU General Public License is available in these formats: </span><a href="https://www.gnu.org/licenses/gpl.html"><span class="baseline font5 font-size-11" style="color:#000000;">HTML</span></a><span class="baseline font5 font-size-11" style="color:#000000;">, </span><a href="https://www.gnu.org/licenses/gpl.txt"><span class="baseline font5 font-size-11" style="color:#000000;">plain text</span></a><span class="baseline font5 font-size-11" style="color:#000000;">, </span><a href="https://www.gnu.org/licenses/gpl.odt"><span class="baseline font5 font-size-11" style="color:#000000;">ODF</span></a><span class="baseline font5 font-size-11" style="color:#000000;">, Docbook </span><a href="https://www.gnu.org/licenses/gpl.dbk"><span class="baseline font5 font-size-11" style="color:#000000;">v4</span></a></div>
@@ -224,25 +284,17 @@
         <div class="line" style="right:418px;left:26px;top:817px;width:149px;bottom:16px" ><span class="baseline font4 font-size-8" style="color:#000000;">https://www.gnu.org/licenses/licenses.html</span></div>
         <div class="line" style="right:26px;left:557px;top:817px;width:11px;bottom:16px" ><span class="baseline font4 font-size-8" style="color:#000000;">2/4</span></div>
     </article>
-    <svg class="canvas" height="842" width="595" style="margin-top:-844px;">
-        <path d="M 0 0 L 793 0 L 793 1122 L 0 1122" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-        <path d="M 53.76 34.25 L 56.76 34.25 L 56.76 37.25 L 53.76 37.25" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 70.27 L 56.76 70.27 L 56.76 73.27 L 53.76 73.27" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 82.27 L 56.76 82.27 L 56.76 85.28 L 53.76 85.28" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 170.07 L 56.76 170.07 L 56.76 173.07 L 53.76 173.07" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 206.08 L 56.76 206.08 L 56.76 209.08 L 53.76 209.08" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 218.09 L 56.76 218.09 L 56.76 221.09 L 53.76 221.09" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 329.89 L 56.76 329.89 L 56.76 332.89 L 53.76 332.89" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 365.91 L 56.76 365.91 L 56.76 368.91 L 53.76 368.91" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 465.7 L 56.76 465.7 L 56.76 468.7 L 53.76 468.7" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 501.72 L 56.76 501.72 L 56.76 504.72 L 53.76 504.72" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 513.73 L 56.76 513.73 L 56.76 516.73 L 53.76 516.73" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 525.73 L 56.76 525.73 L 56.76 528.73 L 53.76 528.73" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 537.74 L 56.76 537.74 L 56.76 540.74 L 53.76 540.74" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 549.74 L 56.76 549.74 L 56.76 552.74 L 53.76 552.74" stroke-width="1" fill="#000000" stroke="transparent"/>
-    </svg>
     <h2 class="header" style="width: 595px;--text:'Page 3'"></h2>
-    <article class="article" dir="ltr" style="width: 595px;height:842px;">
+    <canvas class="canvas" id="canvas-3" style="width: 595px;height:842px;" width=" 595" height="842"></canvas>
+    <script>
+        currentCanvas= document.getElementById('canvas-3');
+        draw([[0,0,792.9999,0],[792.9999,0,792.9999,1122],[792.9999,1122,0,1122]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+        draw([[29,806.3611,566.9999,806.3611],[566.9999,806.3611,566.9999,3729.719],[566.9999,3729.719,29,3729.719]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+        draw([[53.7615,215.8367,56.76289,215.8367],[56.76289,215.8367,56.76289,218.8381],[56.76289,218.8381,53.7615,218.8381]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,227.8422,56.76289,227.8422],[56.76289,227.8422,56.76289,230.8437],[56.76289,230.8437,53.7615,230.8437]],2,'#000000','#000000',1,'nonzero',null);
+        draw([[53.7615,462.7014,56.76289,462.7014],[56.76289,462.7014,56.76289,465.7028],[56.76289,465.7028,53.7615,465.7028]],2,'#000000','#000000',1,'nonzero',null);
+    </script>
+    <article class="article" dir="ltr" style="width: 595px;height:842px;margin-top:-844px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font8 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font8 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
         <div class="line" style="right:360px;left:35px;top:28px;width:199px;bottom:802px" ><span class="baseline font9 font-size-11" style="color:#000000;">GNU Free Documentation License (FDL)</span></div>
@@ -293,15 +345,14 @@
         <div class="line" style="right:418px;left:26px;top:817px;width:149px;bottom:16px" ><span class="baseline font8 font-size-8" style="color:#000000;">https://www.gnu.org/licenses/licenses.html</span></div>
         <div class="line" style="right:26px;left:557px;top:817px;width:11px;bottom:16px" ><span class="baseline font8 font-size-8" style="color:#000000;">3/4</span></div>
     </article>
-    <svg class="canvas" height="842" width="595" style="margin-top:-844px;">
-        <path d="M 0 0 L 793 0 L 793 1122 L 0 1122" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-        <path d="M 29 806.36 L 567 806.36 L 567 3729.72 L 29 3729.72" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-        <path d="M 53.76 215.84 L 56.76 215.84 L 56.76 218.84 L 53.76 218.84" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 227.84 L 56.76 227.84 L 56.76 230.84 L 53.76 230.84" stroke-width="1" fill="#000000" stroke="transparent"/>
-        <path d="M 53.76 462.7 L 56.76 462.7 L 56.76 465.7 L 53.76 465.7" stroke-width="1" fill="#000000" stroke="transparent"/>
-    </svg>
     <h2 class="header" style="width: 595px;--text:'Page 4'"></h2>
-    <article class="article" dir="ltr" style="width: 595px;height:842px;">
+    <canvas class="canvas" id="canvas-4" style="width: 595px;height:842px;" width=" 595" height="842"></canvas>
+    <script>
+        currentCanvas= document.getElementById('canvas-4');
+        draw([[0,0,792.9999,0],[792.9999,0,792.9999,1122],[792.9999,1122,0,1122]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+        draw([[29,21.49652,566.9999,21.49652],[566.9999,21.49652,566.9999,2944.854],[566.9999,2944.854,29,2944.854]],2,'#FFFFFF','#FFFFFF',1,'nonzero',null);
+    </script>
+    <article class="article" dir="ltr" style="width: 595px;height:842px;margin-top:-844px;">
         <div class="line" style="right:532px;left:26px;top:14px;width:35px;bottom:819px" ><span class="baseline font12 font-size-8" style="color:#000000;">6/18/2020</span></div>
         <div class="line" style="right:173px;left:238px;top:14px;width:183px;bottom:819px" ><span class="baseline font12 font-size-8" style="color:#000000;">Licenses - GNU Project - Free Software Foundation</span></div>
         <div class="line" style="right:46px;left:35px;top:28px;width:513px;bottom:802px" ><span class="baseline font13 font-size-11" style="color:#000000;">Copyleft also helps programmers who want to contribute </span><a href="https://www.gnu.org/software/software.html#develop"><span class="baseline font13 font-size-11" style="color:#000000;">improvements</span></a><span class="baseline font13 font-size-11" style="color:#000000;"> to </span><a href="https://www.gnu.org/philosophy/free-sw.html"><span class="baseline font13 font-size-11" style="color:#000000;">free software</span></a><span class="baseline font13 font-size-11" style="color:#000000;"> get permission to</span></div>
@@ -341,9 +392,5 @@
         <div class="line" style="right:418px;left:26px;top:817px;width:149px;bottom:16px" ><span class="baseline font12 font-size-8" style="color:#000000;">https://www.gnu.org/licenses/licenses.html</span></div>
         <div class="line" style="right:26px;left:557px;top:817px;width:11px;bottom:16px" ><span class="baseline font12 font-size-8" style="color:#000000;">4/4</span></div>
     </article>
-    <svg class="canvas" height="842" width="595" style="margin-top:-844px;">
-        <path d="M 0 0 L 793 0 L 793 1122 L 0 1122" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-        <path d="M 29 21.5 L 567 21.5 L 567 2944.85 L 29 2944.85" stroke-width="1" fill="#FFFFFF" stroke="transparent"/>
-    </svg>
 </body>
 </html>

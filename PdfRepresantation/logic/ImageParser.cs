@@ -28,7 +28,7 @@ namespace PdfRepresantation
             this.pageContext = pageContext;
         }
 
-        public virtual void ParseImage(ImageRenderInfo data)
+        public virtual void ParseImage(ImageRenderInfo data, int orderIndex)
         {
             byte[] bytes;
             try
@@ -60,6 +60,7 @@ namespace PdfRepresantation
                 Right = pageContext.PageWidth - x - width,
                 Width = width,
                 Height = height,
+                Order = orderIndex,
             });
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -34,7 +35,7 @@ namespace PdfRepresantation
         public Bitmap ConvertToImage(PdfDetails pdf)
         {
             var width = pdf.Pages.Max(p => p.Width);
-            var height = pdf.Pages.Sum(p => p.Height+1)-1;
+            var height = pdf.Pages.Sum(p => p.Height + 1) - 1;
             var bitmap = new Bitmap((int) width, (int) height);
             var graphics = Graphics.FromImage(bitmap);
             var penSeparator = new Pen(Color.Black, 1) {DashStyle = DashStyle.Dash};
@@ -66,15 +67,23 @@ namespace PdfRepresantation
 
         public void Draw(Graphics graphics, PdfPageDetails page, float top)
         {
-            foreach (var shape in page.Shapes)
+            var items = new List<IPdfDrawingOrdered>();
+            items.AddRange(page.Shapes);
+            items.AddRange(page.Images);
+            items.Sort((i1, i2) => i1.Order - i2.Order);
+            foreach (var item in items)
             {
-                shapeWriter.DrawShape(graphics, page, shape, top);
+                switch (item)
+                {
+                    case PdfImageDetails image:
+                        imageWriter.DrawImage(graphics, page, image, top);
+                        break;
+                    case ShapeDetails shape:
+                        shapeWriter.DrawShape(graphics, page, shape, top);
+                        break;
+                }
             }
 
-            foreach (var image in page.Images)
-            {
-                imageWriter.DrawImage(graphics, page, image, top);
-            }
 
             lineWriter.Init(graphics);
             foreach (var line in page.Lines)

@@ -19,7 +19,7 @@ namespace PdfRepresantation
             this.pageContext = pageContext;
         }
 
-        public virtual void ParsePath(PathRenderInfo data)
+        public virtual void ParsePath(PathRenderInfo data, int orderIndex)
         {
             var shapeOperation = (ShapeOperation) data.GetOperation();
             if (shapeOperation == ShapeOperation.None)
@@ -45,7 +45,8 @@ namespace PdfRepresantation
                 FillColor = fillColor,
                 LineWidth = lineWidth,
                 EvenOddRule = evenOddRule,
-                Lines = lines
+                Lines = lines,
+                Order = orderIndex
             };
             if (Log.DebugSupported)
             {

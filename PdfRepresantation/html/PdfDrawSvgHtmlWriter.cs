@@ -1,25 +1,39 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
 namespace PdfRepresantation
 {
-    public class PdfShapeSvgHtmlWriter : PdfShapeHtmlWriter
+    public class PdfDrawSvgHtmlWriter : PdfDrawHtmlWriter
     {
+
+        public PdfDrawSvgHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
+        {
+        }
         public override void AddShapes(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
     <svg class=""canvas"" height=""").Append(Math.Round(page.Height))
                 .Append("\" width=\"").Append(Math.Round(page.Width))
-                .Append("\" style=\"margin-top:-").Append(Math.Round(page.Height) + 2)
-                .Append("px;\">");
-            foreach (var shape in page.Shapes)
-            {
-                AddShape(shape, sb);
-            }
+                .Append("\">");
+            AddShapesAndImages(page, sb);
 
             sb.Append(@"
     </svg>");
+        }
+
+
+        protected override void AddImage(PdfImageDetails image, StringBuilder sb)
+        {
+            sb.Append(@"
+        <image height=""").Append(image.Height)
+                .Append("\" width=\"")
+                .Append(image.Width).Append("\" href=\"");
+            this.AssignPathImage(image,sb);            
+            sb.Append("\" x=\"").Append((int) (image.Left))
+                .Append("\" y=\"").Append((int) (image.Top)).Append("\"/>");
+            ;
         }
 
         private void AddPoint(ShapePoint p, StringBuilder sb)
@@ -27,7 +41,7 @@ namespace PdfRepresantation
             sb.Append(" ").Append(Math.Round(p.X,2)).Append(" ").Append(Math.Round(p.Y,2));
         }
 
-        private void AddShape(ShapeDetails shape, StringBuilder sb)
+        protected override void AddShape(ShapeDetails shape, StringBuilder sb)
         {
             if(shape.ShapeOperation==ShapeOperation.None)
                 return;

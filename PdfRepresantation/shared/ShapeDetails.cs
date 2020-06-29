@@ -14,8 +14,9 @@ namespace PdfRepresantation
         Both = 3
     }
 
-    public class ShapeDetails
+    public class ShapeDetails:IPdfDrawingOrdered
     {
+        public int Order { get; set; }
         public ShapeOperation ShapeOperation { get; set; }
         public ColorDetails StrokeColor { get; set; }
         public ColorDetails FillColor { get; set; }

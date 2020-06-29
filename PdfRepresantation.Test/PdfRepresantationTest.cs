@@ -30,7 +30,7 @@ namespace PdfRepresantation.Test
         public void ConvertToHtml()
         {
             var paths = new List<string>();
-            var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig { UseCanvas = false });
+            var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig { UseCanvas = true });
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);

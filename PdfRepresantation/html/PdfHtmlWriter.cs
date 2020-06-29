@@ -9,9 +9,9 @@ namespace PdfRepresantation
 {
     public class PdfHtmlWriter
     {
-        private readonly PdfShapeHtmlWriter shapeWriter;
+        private readonly PdfDrawHtmlWriter drawWriter;
+
         private readonly PdfTextHtmlWriter textWriter;
-        private readonly PdfImageHtmlWriter imageWriter;
 
         public PdfHtmlWriter(HtmlWriterConfig config = null)
         {
@@ -19,23 +19,19 @@ namespace PdfRepresantation
                 config = new HtmlWriterConfig();
 
             if (config.DrawShapes)
-                shapeWriter = CreateShapeWriter(config);
+                drawWriter = CreateShapeWriter(config);
             textWriter = CreateTextWriter();
-            imageWriter = CreateImageWriter(config);
         }
 
         protected virtual PdfTextHtmlWriter CreateTextWriter()
             => new PdfTextHtmlWriter();
 
-        protected virtual PdfImageHtmlWriter CreateImageWriter(HtmlWriterConfig config)
-            => new PdfImageHtmlWriter(config.EmbeddedImages, config.DirImages);
-
-        protected virtual PdfShapeHtmlWriter CreateShapeWriter(HtmlWriterConfig config)
+        protected virtual PdfDrawHtmlWriter CreateShapeWriter(HtmlWriterConfig config)
         {
             if (config.UseCanvas)
-                return new PdfShapeCanvasHtmlWriter();
+                return new PdfDrawCanvasHtmlWriter(config.EmbeddedImages, config.DirImages);
             else
-                return new PdfShapeSvgHtmlWriter();
+                return new PdfDrawSvgHtmlWriter(config.EmbeddedImages, config.DirImages);
         }
 
 
@@ -102,12 +98,12 @@ namespace PdfRepresantation
     <meta http-equiv=""Content-Type"" content=""text/html; charset=UTF-8"">
     <title>").Append(title).Append(@"</title>");
             AddStyle(fontRef, allLines, sb);
-            shapeWriter.AddScript(sb);
+            drawWriter.AddScript(sb);
             sb.Append(@"    
     <script>
         function init() {");
             textWriter.AddScriptInit(sb);
-                sb.Append(@"
+            sb.Append(@"
         }
     </script>");
             sb.Append($@"
@@ -118,7 +114,7 @@ namespace PdfRepresantation
             sb.Append(">");
         }
 
-        protected virtual  void EndHtml(StringBuilder sb)
+        protected virtual void EndHtml(StringBuilder sb)
         {
             sb.Append(@"
 </body>
@@ -128,15 +124,16 @@ namespace PdfRepresantation
         protected virtual void AddPage(PdfPageDetails page, Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
         {
             AddHeader(page, sb);
+            var addedShapes = AddShapes(page, sb);
             sb.Append(@"
     <article class=""article"" dir=""").Append(page.RightToLeft ? "rtl" : "ltr")
                 .Append("\" style=\"width: ").Append(Math.Round(page.Width))
                 .Append("px;height:").Append(Math.Round(page.Height))
-                .Append("px;\">");
-            foreach (var pdfImage in page.Images)
-            {
-                imageWriter.AddImage(page, pdfImage, sb);
-            }
+                .Append("px;");
+            if (addedShapes)
+                sb.Append("margin-top:-").Append(Math.Round(page.Height) + 2)
+                    .Append("px;");
+            sb.Append("\">");
 
             foreach (var line in page.Lines)
             {
@@ -145,7 +142,6 @@ namespace PdfRepresantation
 
             sb.Append(@"
     </article>");
-            AddShapes(page, sb);
         }
 
         protected virtual void AddHeader(PdfPageDetails page, StringBuilder sb)
@@ -156,11 +152,14 @@ namespace PdfRepresantation
         }
 
 
-        private void AddShapes(PdfPageDetails page, StringBuilder sb)
+        private bool AddShapes(PdfPageDetails page, StringBuilder sb)
         {
             if (page.Shapes.Count == 0)
-                return;
-            shapeWriter?.AddShapes(page, sb);
+                return false;
+            if (drawWriter == null)
+                return false;
+            drawWriter.AddShapes(page, sb);
+            return true;
         }
 
 
@@ -170,9 +169,7 @@ namespace PdfRepresantation
         {
             sb.Append(@"
     <style>");
-            textWriter.AddTextStyle(sb);
-            imageWriter.AddStyle(sb);
-            shapeWriter.AddStyle(sb);
+            textWriter.AddTextStyle(sb);            drawWriter.AddStyle(sb);
             AddGlobalStyle(sb);
             textWriter.AddFontStyle(fontRef, allLines, sb);
             sb.Append(@"

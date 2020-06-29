@@ -17,7 +17,7 @@ namespace PdfRepresantation
         private readonly LinesGenerator linesGenerator;
 
         private readonly PageContext pageContext;
-
+        private int orderIndex = 0;
         public PageParser(PdfPage page, int pageNumber)
         {
             var pageSize = page.GetPageSize();
@@ -45,13 +45,13 @@ namespace PdfRepresantation
                 case EventType.END_TEXT:
                 case EventType.CLIP_PATH_CHANGED: break;
                 case EventType.RENDER_PATH:
-                    shapeParser.ParsePath((PathRenderInfo) data);
+                    shapeParser.ParsePath((PathRenderInfo) data,orderIndex++);
                     break;
                 case EventType.RENDER_TEXT:
                     textParser.ParseText((TextRenderInfo) data);
                     break;
                 case EventType.RENDER_IMAGE:
-                    imageParser.ParseImage((ImageRenderInfo) data);
+                    imageParser.ParseImage((ImageRenderInfo) data,orderIndex++);
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
