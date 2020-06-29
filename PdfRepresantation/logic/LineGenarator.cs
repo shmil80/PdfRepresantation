@@ -42,15 +42,18 @@ namespace PdfRepresantation
                 return;
             if (Log.DebugSupported)
                 Log.Debug("line:" + string.Join("", lineTexts.Select(t => t.Value)));
+            var bottom = (float)(Math.Round(blocks[0].Bottom*2)/2);
+            float rotation=blocks[0].Rotation;
             lines.Add(new PdfTextLineDetails
             {
-                Bottom = @group.Key/2F,
+                Bottom = bottom,
                 Left = left,
                 Right = pageContext.PageWidth - right,
                 Texts = lineTexts,
                 Top = top,
                 Width = right - left,
-                Height = @group.Key - top,
+                Height = bottom - top,
+                Rotation = rotation==0?(float?) null:rotation
             });
         }
 
@@ -59,7 +62,7 @@ namespace PdfRepresantation
             blocks = new List<PdfTextBlock>();
             left = int.MaxValue;
             right = 0;
-            top = group.Key;
+            top = int.MaxValue;
             last = null;
         }
 
@@ -74,7 +77,12 @@ namespace PdfRepresantation
                     continue;
                 if (last != null)
                 {
-                    if (last.End + last.CharSpacing < current.Start)
+                    if(Math.Abs(last.Rotation - current.Rotation) > 0.0001)
+                    {
+                        AddLine();
+                        InitProperties();
+                    }
+                    else if (last.End + last.CharSpacing < current.Start)
                     {
                         if (last.End + last.CharSpacing * 2 < current.Start)
                         {
@@ -121,6 +129,8 @@ namespace PdfRepresantation
                 blocks.Add(new PdfTextBlock
                 {
                     Bottom = current.Bottom,
+                    BottomInOwnPlane = current.BottomInOwnPlane,
+                    Rotation = current.Rotation,
                     CharSpacing = current.CharSpacing,
                     Font = current.Font,
                     FontSize = current.FontSize,
@@ -128,7 +138,7 @@ namespace PdfRepresantation
                     IsRightToLeft = current.IsRightToLeft,
                     Left = pageContext.PageRTL ? current.Right : last.Right,
                     Width = current.Start - last.End,
-                    Top = current.Top,
+                    Height = current.Height,
                     Link = current.Link,
                     Value = " "
                 });

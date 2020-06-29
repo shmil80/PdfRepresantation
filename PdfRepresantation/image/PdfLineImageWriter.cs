@@ -23,6 +23,12 @@ namespace PdfRepresantation
             top += line.Top;
             var left = line.Left;
             var right = line.Right;
+            if (line.Rotation != null)
+            {
+                graphics.TranslateTransform(left, line.Bottom);
+                graphics.RotateTransform(line.Rotation.Value);
+                graphics.TranslateTransform(-left, -line.Bottom);
+            }
             foreach (var text in line.Texts)
             {
                 Font font = CreateFont(text);
@@ -49,6 +55,7 @@ namespace PdfRepresantation
                     left += width;
                 }
             }
+            graphics.ResetTransform();
         }
 
 

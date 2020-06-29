@@ -50,10 +50,10 @@ namespace PdfRepresantation
             }
         }
 
-        public float GetFontSize(TextRenderInfo textRenderInfo, LineSegment baseline, LineSegment ascentLine)
+        public float GetFontSize(TextRenderInfo textRenderInfo,PdfTextBlock text)
         {
             var fontSize = textRenderInfo.GetFontSize();
-            var height = ascentLine.GetStartPoint().Get(1) - baseline.GetStartPoint().Get(1);
+            var height = text.Height;
             if (fontSize > 0.99 && fontSize < 1.01)
             {
                 LogWrongFontSize("no font size. take height of line:" + height);

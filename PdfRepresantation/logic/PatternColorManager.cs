@@ -12,7 +12,7 @@ namespace PdfRepresantation
         public static GardientColorDetails GetColor(PdfPattern pattern, float alpha)
         {
             //not supported yet
-            return null;
+           // return null;
             switch (pattern)
             {
                 case PdfPattern.Shading shading:

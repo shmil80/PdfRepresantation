@@ -58,7 +58,10 @@ namespace PdfRepresantation
         public virtual void AddStyle(StringBuilder sb)
         {
                 sb.Append(@"
-        .image{position:absolute}");
+        .image{
+            position:absolute;
+            z-index: -1;
+        }");
         }
     }
 }

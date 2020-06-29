@@ -4,6 +4,8 @@ namespace PdfRepresantation
 {
     public class PdfTextLineDetails : PdfDetailsItem
     {
+        public float? Rotation { get; set; }
+
         public IList<PdfTextResult> Texts { get; set; } = new List<PdfTextResult>();
 
         public string InnerText => string.Join("", Texts);

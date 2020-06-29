@@ -18,8 +18,9 @@ namespace PdfRepresantation
         {
             AssignStartEnd(texts);
             return texts
-                .OrderBy(t => t.Start)
-                .GroupBy(t => (int) Math.Round(t.Bottom*2))
+                .OrderBy(t => t.Rotation)
+                .ThenBy(t => t.Start)
+                .GroupBy(t => (int) Math.Round(t.BottomInOwnPlane * 2))
                 .OrderBy(g => g.Key)
                 .SelectMany(g => new LineGenarator(pageContext, g).Lines)
                 .ToList();
@@ -31,18 +32,17 @@ namespace PdfRepresantation
             {
                 if (pageContext.PageRTL)
                 {
-
                     if (t.Value == " " && t.Width < t.CharSpacing)
                     {
                         t.Left = t.Right - t.CharSpacing;
                         t.Width = t.CharSpacing;
                     }
+
                     t.Start = pageContext.PageWidth - t.Right;
-                    t.End =  pageContext.PageWidth - t.Left;
+                    t.End = pageContext.PageWidth - t.Left;
                 }
                 else
                 {
-                 
                     if (t.Value == " " && t.Width < t.CharSpacing)
                         t.Width = t.CharSpacing;
                     t.Start = t.Left;

@@ -67,8 +67,10 @@ namespace PdfRepresantation
             PdfTextLineDetails line, StringBuilder sb)
         {
             sb.Append($@"
-        <div class=""line"" style=""")
-                .Append("right:").Append((int) line.Right)
+        <div class=""line"" style=""");
+            if (line.Rotation.HasValue)
+                sb.Append("transform: rotate(").Append((int) line.Rotation.Value).Append("deg);");
+            sb.Append("right:").Append((int) line.Right)
                 .Append("px;left:").Append((int) line.Left)
                 .Append("px;top:").Append((int) (line.Top))
                 .Append("px;width:").Append((int) (line.Width))
@@ -172,13 +174,14 @@ namespace PdfRepresantation
             position:absolute;
             min-width:fit-content;
             white-space: nowrap;
+            transform-origin: bottom left;
         }
         .baseline{vertical-align:baseline;}
          dark{
             background-color: lightgray;
             display: block;
             position: absolute;
-            z-index: -1;
+            z-index: -10;
          }");
         }
     }

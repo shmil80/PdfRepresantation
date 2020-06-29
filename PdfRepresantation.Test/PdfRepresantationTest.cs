@@ -34,8 +34,8 @@ namespace PdfRepresantation.Test
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-                //                if(name!="building")
-                //                    continue;
+//                if(name!="rotate")
+//                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);
