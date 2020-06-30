@@ -28,7 +28,6 @@ namespace PdfRepresantation
             var fillColor = ColorManager.GetColor(data.GetFillColor(),data.GetGraphicsState().GetFillOpacity());
             if (shapeOperation != ShapeOperation.Stroke && fillColor == null )
                 return;
-            data.
             var strokeColor = ColorManager.GetColor(data.GetStrokeColor(),data.GetGraphicsState().GetStrokeOpacity());
             var lineWidth = data.GetLineWidth();
             var lineCap = data.GetLineCapStyle();
