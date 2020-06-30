@@ -92,7 +92,7 @@ namespace PdfRepresantation
         private void MergeMaskArray(ref byte[] bytes, PdfArray array, PdfName spaceName)
         {
             var colors = array.ToIntArray();
-            var space = ColorManager.Instance.GetSpaceByName(spaceName);
+            var colorManager = ColorManager.GetSpaceByName(spaceName);
             var bitmapImage = Bitmap.FromStream(new MemoryStream(bytes)) as Bitmap;
             MakeTransparentPossible(ref bitmapImage);
 
@@ -106,10 +106,10 @@ namespace PdfRepresantation
                     secondHalf[i / 2] = colors[i];
             }
 
-            var start = ColorManager.Instance.GetColorBySpace(space, firstHalf);
+            var start = colorManager.Color(firstHalf,1);
             if (start == null)
                 return;
-            var end = ColorManager.Instance.GetColorBySpace(space, secondHalf);
+            var end = colorManager.Color(secondHalf,1);
             if (end == null)
                 return;
 

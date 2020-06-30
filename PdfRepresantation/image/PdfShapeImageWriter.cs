@@ -73,12 +73,15 @@ namespace PdfRepresantation
             Brush brush;
             switch (color)
             {
+                case null: return Brushes.Transparent;
                 case SimpleColorDetails simpleColor:
                     brush = new SolidBrush(simpleColor.Color);
                     break;
-                //case GardientColorDetails gardientColor:
-                //    brush = new LinearGradientBrush();
-                //    break;
+                case GardientColorDetails gardientColor:
+                    //TODO
+                    brush=Brushes.Blue;                    
+//                    brush = new LinearGradientBrush();
+                    break;
                 default: throw new IndexOutOfRangeException();
             }
 
