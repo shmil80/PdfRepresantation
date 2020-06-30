@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Colorspace;
 using iText.Kernel.Pdf.Function;
@@ -32,9 +33,9 @@ namespace PdfRepresantation
                 case PdfShading.Axial axial:
                     var axialFunction = (PdfDictionary) axial.GetFunction();
                     GetFunctionDetails(axialFunction);
-                    var coords = GetItemsFloat(axial.GetCoords());
-                    var domain = GetItemsFloat(axial.GetDomain());
-                    var extend = GetItemsBool(axial.GetExtend());
+                    var coords = axial.GetCoords().ToFloatArray();
+                    var domain = axial.GetDomain().ToFloatArray();
+                    var extend = axial.GetExtend().ToBooleanArray();
 
                     break;
                 case PdfShading.CoonsPatchMesh coonsPatchMesh:
@@ -68,39 +69,7 @@ namespace PdfRepresantation
         }
 
 
-        private static PdfDictionary[] GetItemsDict(PdfArray array)
-        {
-            return GetItems(array, (a, i) => a.GetAsDictionary(i));
-        }
-
-        private static float[] GetItemsFloat(PdfArray array)
-        {
-            return GetItems(array, (a, i) => a.GetAsNumber(i).FloatValue());
-        }
-
-        private static int[] GetItemsInt(PdfArray array)
-        {
-            return GetItems(array, (a, i) => a.GetAsNumber(i).IntValue());
-        }
-
-        private static T[] GetItems<T>(PdfArray array, Func<PdfArray, int, T> getOne)
-        {
-            if (array == null)
-                return null;
-            T[] result = new T[array.Size()];
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = getOne(array, i);
-            }
-
-            return result;
-        }
-
-        private static bool[] GetItemsBool(PdfArray array)
-        {
-            return GetItems(array, (a, i) => a.GetAsBoolean(i).GetValue());
-        }
-
+ 
         private static void GetFunctionDetails(PdfDictionary dict)
         {
             var function = new PdfFunction(dict);
@@ -109,32 +78,32 @@ namespace PdfRepresantation
             switch (function.GetFunctionType())
             {
                 case 0:
-                    domain = GetItemsInt(dict.GetAsArray(PdfName.Domain));
-                    GetItemsInt(dict.GetAsArray(PdfName.Size));
+                    domain = dict.GetAsArray(PdfName.Domain).ToIntArray();
+                    dict.GetAsArray(PdfName.Size).ToIntArray();
                     dict.GetAsInt(PdfName.BitsPerSample);
                     dict.GetAsInt(PdfName.Order);
-                    encode = GetItemsInt(dict.GetAsArray(PdfName.Encode));
-                   var decode = GetItemsInt(dict.GetAsArray(PdfName.Decode));
-                   var range = GetItemsInt(dict.GetAsArray(PdfName.Range));
+                    encode = dict.GetAsArray(PdfName.Encode).ToIntArray();
+                   var decode = dict.GetAsArray(PdfName.Decode).ToIntArray();
+                   var range = dict.GetAsArray(PdfName.Range).ToIntArray();
                     break;
                 case 2:
-                    domain = GetItemsInt(dict.GetAsArray(PdfName.Domain));
-                    var color1 = GetItemsFloat(dict.GetAsArray(PdfName.C0));
-                    var color2 = GetItemsFloat(dict.GetAsArray(PdfName.C1));
+                    domain = dict.GetAsArray(PdfName.Domain).ToIntArray();
+                    var color1 = dict.GetAsArray(PdfName.C0).ToFloatArray();
+                    var color2 = dict.GetAsArray(PdfName.C1).ToFloatArray();
                     var n=dict.GetAsInt(PdfName.N);
                     break;
                 case 3:
-                    domain = GetItemsInt(dict.GetAsArray(PdfName.Domain));
-                    foreach (var sub in GetItemsDict(dict.GetAsArray(PdfName.Functions)))
+                    domain = dict.GetAsArray(PdfName.Domain).ToIntArray();
+                    foreach (PdfDictionary sub in dict.GetAsArray(PdfName.Functions))
                     {
                         GetFunctionDetails(sub);
                     }
 
-                    var bounds = GetItemsFloat(dict.GetAsArray(PdfName.Bounds));
-                    encode = GetItemsInt(dict.GetAsArray(PdfName.Encode));
+                    var bounds = dict.GetAsArray(PdfName.Bounds).ToFloatArray();
+                    encode = dict.GetAsArray(PdfName.Encode).ToIntArray();
                     break;
                 case 4:
-                    domain = GetItemsInt(dict.GetAsArray(PdfName.Domain));
+                    domain = dict.GetAsArray(PdfName.Domain).ToIntArray();
                     break;
             }
         }

@@ -11,16 +11,18 @@ namespace PdfRepresantation
         {
         }
 
-        public override void AddShapes(PdfPageDetails page, StringBuilder sb)
+        public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
+            var width = Math.Round(page.Width,2);
+            var height = Math.Round(page.Height,2);
             sb.Append(@"
     <canvas class=""canvas"" id=""canvas-").Append(page.PageNumber)
                 .Append("\" style=\"width: ")
-                .Append(Math.Round(page.Width))
-                .Append("px;height:").Append(Math.Round(page.Height))
+                .Append(width)
+                .Append("px;height:").Append(height)
                 .Append("px;\" width=\" ")
-                .Append(Math.Round(page.Width))
-                .Append("\" height=\"").Append(Math.Round(page.Height)).Append("\"></canvas>");
+                .Append(width)
+                .Append("\" height=\"").Append(height).Append("\"></canvas>");
 
             sb.Append(@"
     <script>
@@ -68,15 +70,15 @@ namespace PdfRepresantation
         <img style=""display:none"" id=""image-").Append(image.Order)
                 .Append("\" height=\"").Append(image.Height)
                 .Append("\" width=\"")
-                .Append(image.Width).Append("\" src=\"");
+                .Append(Math.Round(image.Width,2)).Append("\" src=\"");
             AssignPathImage(image,sb);
 
             sb.Append(@"""/>
     <script>");
             sb.Append(@"
         drawImage('image-").Append(image.Order).Append("',")
-                .Append(image.Left).Append(",").Append(image.Top)
-                .Append(",").Append(image.Width).Append(",").Append(image.Height).Append(");");
+                .Append(Math.Round(image.Left,2)).Append(",").Append(Math.Round(image.Top,2))
+                .Append(",").Append(Math.Round(image.Width,2)).Append(",").Append(Math.Round(image.Height,2)).Append(");");
         }
 
         public override void AddScript(StringBuilder sb)

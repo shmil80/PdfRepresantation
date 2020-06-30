@@ -15,7 +15,10 @@ namespace PdfRepresantation
             IEnumerable<PdfTextLineDetails> allLines,
             StringBuilder sb)
         {
-            foreach (var size in allLines.SelectMany(l => l.Texts).Select(t => Math.Round(t.FontSize * 2)).Distinct())
+            foreach (var size in allLines
+                .SelectMany(l => l.Texts)
+                .Select(t => Math.Round(t.FontSize * 2))
+                .Distinct())
             {
                 sb.Append(@"
         .font-size-").Append((size / 2).ToString(formatNumInClassName))
@@ -69,12 +72,12 @@ namespace PdfRepresantation
             sb.Append($@"
         <div class=""line"" style=""");
             if (line.Rotation.HasValue)
-                sb.Append("transform: rotate(").Append((int) line.Rotation.Value).Append("deg);");
-            sb.Append("right:").Append((int) line.Right)
-                .Append("px;left:").Append((int) line.Left)
-                .Append("px;top:").Append((int) (line.Top))
-                .Append("px;width:").Append((int) (line.Width))
-                .Append("px;bottom:").Append((int) (page.Height - line.Bottom))
+                sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");
+            sb.Append("right:").Append(Math.Round(line.Right,2))
+                .Append("px;left:").Append(Math.Round( line.Left,2))
+                .Append("px;top:").Append(Math.Round(line.Top,2))
+                .Append("px;width:").Append(Math.Round(line.Width,2))
+                .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom,2))
                 .Append("px\" >");
             PdfLinkResult link = null;
             foreach (var text in line.Texts)
@@ -129,7 +132,8 @@ namespace PdfRepresantation
             if(text.Font.Bold)
                 sb.Append($@" bold");
             sb.Append(" font-size-")
-                .Append((Math.Round(text.FontSize * 2) / 2).ToString(formatNumInClassName));
+                .Append((Math.Round(text.FontSize * 2) / 2)
+                    .ToString(formatNumInClassName));
         }
 
         protected virtual void AddText(string text, StringBuilder sb)

@@ -56,14 +56,14 @@ namespace PdfRepresantation
                     return FromGray(value[0], alpha);
                 case ColorSpace.DeviceRGB:
                 case ColorSpace.CalRgb:
+                case ColorSpace.Lab:
                     return FromRGB(value[0], value[1], value[2], alpha);
                 case ColorSpace.DeviceCMYK:
                     return FromCmyk(value[0], value[1], value[2], value[3], alpha);
-                case ColorSpace.Lab:
-                case ColorSpace.Indexed:
                 case ColorSpace.Separation:
                 case ColorSpace.DeviceN:
                 case ColorSpace.Pattern:
+                case ColorSpace.Indexed:
                 case ColorSpace.IccBased:
                     return FromUnkown(value, alpha);
                 default: throw new ArgumentOutOfRangeException(nameof(space), space, null);
@@ -80,6 +80,8 @@ namespace PdfRepresantation
                 case ColorSpace.Pattern:
                     return PatternColorManager.GetColor(((PatternColor) colorPfd).GetPattern(), alpha);
                 case ColorSpace.IccBased:
+                case ColorSpace.Separation:
+                case ColorSpace.DeviceN:
                     var colorSpace = colorPfd.GetColorSpace();
                     var source = ((PdfArray) colorSpace.GetPdfObject()).GetAsStream(1);
                     var altName = source.GetAsName(PdfName.Alternate);
@@ -92,13 +94,11 @@ namespace PdfRepresantation
                     {
                         color = FromUnkown(value, alpha);
                     }
+
                     if (color == null)
                         return null;
-                    return new SimpleColorDetails
-                    {
-                        Space = type,
-                        Color = color.Value
-                    };;
+                    return new SimpleColorDetails{Space = type,Color = color.Value};
+                    ;
                 default:
                     color = GetColorBySpace(type, value, alpha);
                     if (color == null)
@@ -111,18 +111,49 @@ namespace PdfRepresantation
             }
         }
 
+        public Color? GetColorBySpace(ColorSpace space, int[] value)
+        {
+            switch (space)
+            {
+                case ColorSpace.DeviceGray:
+                case ColorSpace.CalGray:
+                    return Color.FromArgb(value[0], value[0], value[0]);
+                case ColorSpace.DeviceRGB:
+                case ColorSpace.CalRgb:
+                case ColorSpace.Lab:
+                    return Color.FromArgb(value[0], value[1], value[2]);
+                case ColorSpace.DeviceCMYK:
+                    return FromCmyk(value[0], value[1], value[2], value[3]);
+                case ColorSpace.Separation:
+                case ColorSpace.DeviceN:
+                case ColorSpace.Pattern:
+                case ColorSpace.Indexed:
+                case ColorSpace.IccBased:
+                    return FromUnkown(value);
+                default: throw new ArgumentOutOfRangeException(nameof(space), space, null);
+            }
+        }
+
         private Color? FromUnkown(float[] value, float alpha)
         {
             switch (value.Length)
             {
-                case 0:
-                    return null;
-                case 1:
-                    return FromGray(value[0], alpha);
-                case 3:
-                    return FromRGB(value[0], value[1], value[2], alpha);
-                case 4:
-                    return FromCmyk(value[0], value[1], value[2], value[3], alpha);
+                case 0: return null;
+                case 1: return FromGray(value[0], alpha);
+                case 3: return FromRGB(value[0], value[1], value[2], alpha);
+                case 4: return FromCmyk(value[0], value[1], value[2], value[3], alpha);
+                default: return null;
+            }
+        }
+
+        private Color? FromUnkown(int[] value)
+        {
+            switch (value.Length)
+            {
+                case 0: return null;
+                case 1: return Color.FromArgb(value[0]);
+                case 3: return Color.FromArgb(value[0], value[1], value[2]);
+                case 4: return FromCmyk(value[0], value[1], value[2], value[3]);
                 default: return null;
             }
         }
@@ -149,47 +180,53 @@ namespace PdfRepresantation
             return Color.FromArgb((int) (alpha * 255), r, g, b);
         }
 
+        private static Color FromCmyk(int c, int m, int y, int k)
+        {
+            return FromCmyk(c / 255F, m / 255F, y / 255F, k / 255F, 0);
+        }
+
         public TextRenderDetails GetColor(TextRenderInfo text)
         {
-            TextRenderDetails result=new TextRenderDetails();
             var gs = text.GetGraphicsState();
-            var stroke = GetColor(text.GetStrokeColor(), gs.GetStrokeOpacity());
-            var fill = GetColor(text.GetFillColor(), gs.GetFillOpacity());
-            
-            TextRenderOptions option;
+            var result = new TextRenderDetails
+            {
+                Option = GetOption(text),
+                FillColor = GetColor(text.GetFillColor(), gs.GetFillOpacity()),
+                StrokeColor = GetColor(text.GetStrokeColor(), gs.GetStrokeOpacity())
+            };
+            result.MainColor = ChooseMain(result);
+            return result;
+        }
+
+        private static TextRenderOptions GetOption(TextRenderInfo text)
+        {
             switch (text.GetTextRenderMode())
             {
-                case 0: option = TextRenderOptions.Fill;break;
-                case 1: option = TextRenderOptions.Stroke; break;
-                case 2: option = TextRenderOptions.Fill_Stroke; break;
-                case 3:option = TextRenderOptions.Invisible;break;
-                case 4:option = TextRenderOptions.Fill_Path;break;
-                case 5: option = TextRenderOptions.Stroke_Path; break; 
-                case 6:option = TextRenderOptions.Fill_Stroke_Path; break;                   
-                case 7: option = TextRenderOptions.Path;break;
+                case 0: return TextRenderOptions.Fill;
+                case 1: return TextRenderOptions.Stroke;
+                case 2: return TextRenderOptions.Fill_Stroke;
+                case 3: return TextRenderOptions.Invisible;
+                case 4: return TextRenderOptions.Fill_Path;
+                case 5: return TextRenderOptions.Stroke_Path;
+                case 6: return TextRenderOptions.Fill_Stroke_Path;
+                case 7: return TextRenderOptions.Path;
                 default: throw new ApplicationException("Wrong render mode");
             }
-
-            result.Option = option;
-            result.FillColor = fill;
-            result.StrokeColor = stroke;
-            result.MainColor= ChooseMain(result);
-            return result;
         }
 
         public Color? ChooseMain(TextRenderDetails result)
         {
             switch (result.Option)
             {
-                case TextRenderOptions.Invisible:return Color.Transparent;
-                case TextRenderOptions.Fill: 
+                case TextRenderOptions.Invisible: return Color.Transparent;
+                case TextRenderOptions.Fill:
                 case TextRenderOptions.Fill_Path: return (result.FillColor as SimpleColorDetails)?.Color;
                 case TextRenderOptions.Stroke:
                 case TextRenderOptions.Stroke_Path: return (result.StrokeColor as SimpleColorDetails)?.Color;
-                case TextRenderOptions.Path: 
-                case TextRenderOptions.Fill_Stroke:  
+                case TextRenderOptions.Path:
+                case TextRenderOptions.Fill_Stroke:
                 case TextRenderOptions.Fill_Stroke_Path:
-                    if (result.StrokeColor is SimpleColorDetails strokeSimple  
+                    if (result.StrokeColor is SimpleColorDetails strokeSimple
                         && strokeSimple.Color.A != 0)
                         return strokeSimple.Color;
                     return (result.FillColor as SimpleColorDetails)?.Color;

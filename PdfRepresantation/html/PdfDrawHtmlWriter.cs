@@ -66,7 +66,7 @@ namespace PdfRepresantation
                 sb.Append(path);
             }
         }
-        public abstract void AddShapes(PdfPageDetails page, StringBuilder sb);
+        public abstract void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb);
 
         public abstract void AddScript(StringBuilder sb);
 

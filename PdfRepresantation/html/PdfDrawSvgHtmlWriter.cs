@@ -11,11 +11,11 @@ namespace PdfRepresantation
         public PdfDrawSvgHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
         {
         }
-        public override void AddShapes(PdfPageDetails page, StringBuilder sb)
+        public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
-    <svg class=""canvas"" height=""").Append(Math.Round(page.Height))
-                .Append("\" width=\"").Append(Math.Round(page.Width))
+    <svg class=""canvas"" height=""").Append(Math.Round(page.Height,2))
+                .Append("\" width=\"").Append(Math.Round(page.Width,2))
                 .Append("\">");
             AddShapesAndImages(page, sb);
 
@@ -27,12 +27,12 @@ namespace PdfRepresantation
         protected override void AddImage(PdfImageDetails image, StringBuilder sb)
         {
             sb.Append(@"
-        <image height=""").Append(image.Height)
+        <image height=""").Append(Math.Round(image.Height,2))
                 .Append("\" width=\"")
-                .Append(image.Width).Append("\" href=\"");
+                .Append(Math.Round(image.Width,2)).Append("\" href=\"");
             this.AssignPathImage(image,sb);            
-            sb.Append("\" x=\"").Append((int) (image.Left))
-                .Append("\" y=\"").Append((int) (image.Top)).Append("\"/>");
+            sb.Append("\" x=\"").Append(Math.Round(image.Left,2))
+                .Append("\" y=\"").Append(Math.Round(image.Top,2)).Append("\"/>");
             ;
         }
 

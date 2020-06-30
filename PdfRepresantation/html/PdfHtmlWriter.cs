@@ -12,6 +12,7 @@ namespace PdfRepresantation
         private readonly PdfDrawHtmlWriter drawWriter;
 
         private readonly PdfTextHtmlWriter textWriter;
+        private readonly PdfImageHtmlWriter imageWriter;
 
         public PdfHtmlWriter(HtmlWriterConfig config = null)
         {
@@ -21,10 +22,14 @@ namespace PdfRepresantation
             if (config.DrawShapes)
                 drawWriter = CreateShapeWriter(config);
             textWriter = CreateTextWriter();
+            imageWriter = CreateImageWriter(config);
         }
 
         protected virtual PdfTextHtmlWriter CreateTextWriter()
             => new PdfTextHtmlWriter();
+
+        protected virtual PdfImageHtmlWriter CreateImageWriter(HtmlWriterConfig config)
+            => new PdfImageHtmlWriter(config.EmbeddedImages, config.DirImages);
 
         protected virtual PdfDrawHtmlWriter CreateShapeWriter(HtmlWriterConfig config)
         {
@@ -125,16 +130,24 @@ namespace PdfRepresantation
         {
             AddHeader(page, sb);
             var addedShapes = AddShapes(page, sb);
+            var width = Math.Round(page.Width,2);
+            var height = Math.Round(page.Height,2);
             sb.Append(@"
     <article class=""article"" dir=""").Append(page.RightToLeft ? "rtl" : "ltr")
-                .Append("\" style=\"width: ").Append(Math.Round(page.Width))
-                .Append("px;height:").Append(Math.Round(page.Height))
+                .Append("\" style=\"width: ").Append(width)
+                .Append("px;height:").Append(height)
                 .Append("px;");
             if (addedShapes)
-                sb.Append("margin-top:-").Append(Math.Round(page.Height) + 2)
+                sb.Append("margin-top:-").Append(height + 2)
                     .Append("px;");
             sb.Append("\">");
-
+            if (!addedShapes)
+            {
+                foreach (var pdfImage in page.Images)
+                {
+                    imageWriter.AddImage(page, pdfImage, sb);
+                }
+            }
             foreach (var line in page.Lines)
             {
                 textWriter.AddLine(page, fontRef, line, sb);
@@ -147,7 +160,7 @@ namespace PdfRepresantation
         protected virtual void AddHeader(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
-    <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width))
+    <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width,2))
                 .Append("px;--text:'Page ").Append(page.PageNumber).Append("'\"></h2>");
         }
 
@@ -158,7 +171,7 @@ namespace PdfRepresantation
                 return false;
             if (drawWriter == null)
                 return false;
-            drawWriter.AddShapes(page, sb);
+            drawWriter.DrawShapesAndImages(page, sb);
             return true;
         }
 
@@ -169,7 +182,9 @@ namespace PdfRepresantation
         {
             sb.Append(@"
     <style>");
-            textWriter.AddTextStyle(sb);            drawWriter.AddStyle(sb);
+            textWriter.AddTextStyle(sb);
+            imageWriter.AddStyle(sb);
+			drawWriter.AddStyle(sb);
             AddGlobalStyle(sb);
             textWriter.AddFontStyle(fontRef, allLines, sb);
             sb.Append(@"
