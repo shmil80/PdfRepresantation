@@ -92,7 +92,7 @@ namespace PdfRepresantation
         private void MergeMaskArray(ref byte[] bytes, PdfArray array, PdfName spaceName)
         {
             var colors = array.ToIntArray();
-            var colorManager = ColorManager.GetSpaceByName(spaceName);
+            var colorManager = (NormalColorManager)ColorManager.GetManagerByName(spaceName);
             var bitmapImage = Bitmap.FromStream(new MemoryStream(bytes)) as Bitmap;
             MakeTransparentPossible(ref bitmapImage);
 

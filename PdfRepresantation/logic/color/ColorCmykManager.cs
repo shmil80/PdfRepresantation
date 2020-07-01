@@ -3,16 +3,11 @@ using iText.Kernel.Pdf;
 
 namespace PdfRepresantation
 {
-    public class ColorCmykManager : ColorManager
+    public class ColorCmykManager : NormalColorManager
     {
         protected override ColorSpace Type => ColorSpace.DeviceCMYK;
         public static ColorCmykManager Instance = new ColorCmykManager();
 
-        internal override Color? Color(iText.Kernel.Colors.Color colorPfd, float alpha)
-        {
-            var value = colorPfd.GetColorValue();
-            return FromCmyk(value[0], value[1], value[2], value[3], alpha);
-        }
 
         public static Color FromCmyk(float c, float m, float y, float k, float alpha)
         {
@@ -22,6 +17,11 @@ namespace PdfRepresantation
             return System.Drawing.Color.FromArgb((int) (alpha * 255), r, g, b);
         }
 
+
+        public override Color? Color(float[] value, float alpha)
+        {
+            return FromCmyk(value[0], value[1], value[2], value[3], alpha);
+        }
 
         public override Color? Color(int[] value, float alpha)
         {

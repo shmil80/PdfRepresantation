@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -10,7 +8,6 @@ using Newtonsoft.Json;
 
 namespace PdfRepresantation.Test
 {
-
     //test the conversion
     //for those tests to run you need to put pdf files in the "File" direcory
     //and the result will be written in the "results" directory
@@ -19,13 +16,15 @@ namespace PdfRepresantation.Test
     {
         private string sourceDir = "Files";
         private string targetDir = "Results";
+
         [AssemblyInitialize]
         public static void Init(TestContext context)
         {
             if (Directory.GetCurrentDirectory().Contains("netcoreapp"))
                 Directory.SetCurrentDirectory(Path.Combine("..", "..", ".."));
-            Log.logger = new ConsoleLogger { DebugSupported = true, InfoSupported = true, ErrorSupported = true };
+            Log.logger = new ConsoleLogger {DebugSupported = true, InfoSupported = true, ErrorSupported = true};
         }
+
         [TestMethod]
         public void ConvertToHtml()
         {
@@ -41,10 +40,11 @@ namespace PdfRepresantation.Test
                 paths.Add(target);
                 htmlWriter.SaveAsHtml(details, target);
             }
+
             var json = JsonConvert.SerializeObject(paths, Formatting.Indented);
             File.WriteAllText("urls.js", $"urls={json};");
-
         }
+
         [TestMethod]
         public void ConvertToText()
         {
@@ -57,8 +57,8 @@ namespace PdfRepresantation.Test
                 var target = Path.Combine(targetDir, name + ".txt");
                 File.WriteAllText(target, details.ToString());
             }
-
         }
+
         [TestMethod]
         public void ConvertToImage()
         {
@@ -73,9 +73,6 @@ namespace PdfRepresantation.Test
 
                 imageWriter.SaveAsImage(details, target);
             }
-
         }
-
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using iText.Kernel.Colors;
 using iText.Kernel.Pdf;
@@ -23,14 +24,10 @@ namespace PdfRepresantation
             throw new NotSupportedException();
         }
 
-        public override Color? Color(int[] value, float alpha)
-        {
-            throw new NotSupportedException();
-        }
-
         public override int LengthColor(PdfObject o)
         {
-            return -1; }
+            return -1;
+        }
 
         private GardientColorDetails GetColor(PdfPattern pattern, float alpha)
         {
@@ -47,31 +44,65 @@ namespace PdfRepresantation
             }
         }
 
-        private static GardientColorDetails GetColor(PdfPattern.Shading shading, float alpha)
+        private GardientColorDetails GetColor(PdfPattern.Shading shading, float alpha)
         {
-            var shadingDict = shading.GetShading();
-            var shadingConstructed = PdfShading.MakeShading(shadingDict);
-            switch (shadingConstructed)
+            var matrix = shading.GetMatrix();
+            var shadingDetailsDict = shading.GetShading();
+            var shadingDetails = PdfShading.MakeShading(shadingDetailsDict);
+            var pdfFunction = (PdfDictionary) shadingDetails.GetFunction();
+            var function = Function.Create(pdfFunction);
+            var colorManager = GetManagerBySpace(shadingDetails.GetColorSpace());
+            var background = shadingDetails.GetPdfObject().GetAsArray(new PdfName("background"))?.ToFloatArray();
+            float[] domain, coords;
+            bool[] extend;
+            switch (shadingDetails)
             {
                 case PdfShading.Axial axial:
-                    var axialFunction = (PdfDictionary) axial.GetFunction();
-                    FunctionColorManager.GetFunctionDetails(axialFunction);
-                    var coords = axial.GetCoords().ToFloatArray();
-                    var domain = axial.GetDomain().ToFloatArray();
-                    var extend = axial.GetExtend().ToBooleanArray();
-
+                    return GetAxialColor(axial);
+                case PdfShading.Radial radial:
+                    coords = radial.GetCoords().ToFloatArray();
+                    domain = radial.GetDomain().ToFloatArray();
+                    extend = radial.GetExtend().ToBooleanArray();
+                    break;
+                case PdfShading.FunctionBased functionBased:
+                    FunctionBasedColor(functionBased);
                     break;
                 case PdfShading.CoonsPatchMesh coonsPatchMesh:
                     break;
                 case PdfShading.FreeFormGouraudShadedTriangleMesh freeFormGouraudShadedTriangleMesh: break;
-                case PdfShading.FunctionBased functionBased: break;
                 case PdfShading.LatticeFormGouraudShadedTriangleMesh latticeFormGouraudShadedTriangleMesh:
                     break;
-                case PdfShading.Radial radial: break;
                 case PdfShading.TensorProductPatchMesh tensorProductPatchMesh: break;
             }
 
             return null;
+        }
+
+        private static GardientColorDetails GetAxialColor(PdfShading.Axial axial1)
+        {
+            float[] coords;
+            float[] domain;
+            bool[] extend;
+            coords = axial1.GetCoords().ToFloatArray();
+            domain = axial1.GetDomain().ToFloatArray();
+            extend = axial1.GetExtend().ToBooleanArray();
+            return null;
+        }
+
+        private static void FunctionBasedColor(PdfShading.FunctionBased functionBased)
+        {
+            float[] domain = functionBased.GetDomain().ToFloatArray();
+            var pdfFunction = functionBased.GetFunction();
+            if (pdfFunction is PdfDictionary dictFunc)
+            {
+                var function = Function.Create(dictFunc);
+            }
+            else if (pdfFunction is PdfArray arrayFunc)
+            {
+                var functions = arrayFunc
+                    .Select(d => Function.Create((PdfDictionary) d))
+                    .ToArray();
+            }
         }
 
         private static GardientColorDetails GetColor(PdfPattern.Tiling tiling, float alpha)
@@ -90,6 +121,5 @@ namespace PdfRepresantation
             var colored = tiling.IsColored();
             return null;
         }
-
     }
 }

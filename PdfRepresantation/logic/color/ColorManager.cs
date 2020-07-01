@@ -26,17 +26,18 @@ namespace PdfRepresantation
             }
         }
 
-        internal ColorManager GetSpaceByName(PdfObject pdfObject)
+        internal static ColorManager GetManagerBySpace(PdfObject pdfObject)
         {
-            if (pdfObject is PdfName name)
-                return GetSpaceByName(name);
-            if (pdfObject is PdfArray array)
-                return GetSpaceByName(array.GetAsName(0));
+            switch (pdfObject)
+            {
+                case PdfName name: return GetManagerByName(name);
+                case PdfArray array: return GetManagerByName(array.GetAsName(0));
+            }
             return null;
 
         }
 
-        internal static ColorManager GetSpaceByName(PdfName name)
+        internal static ColorManager GetManagerByName(PdfName name)
         {
             if (name.Equals(PdfName.CalGray)) return ColorGrayManager.CalGrayManager;
             if (name.Equals(PdfName.DeviceGray)) return ColorGrayManager.DeviceGrayManager;
@@ -73,7 +74,6 @@ namespace PdfRepresantation
             };
         }
 
-        public abstract Color? Color(int[] value, float alpha);
         public abstract int LengthColor(PdfObject o);
     }
 }

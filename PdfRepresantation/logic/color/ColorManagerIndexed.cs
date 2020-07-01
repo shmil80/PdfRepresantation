@@ -13,7 +13,7 @@ namespace PdfRepresantation
             var colorSpace = colorPfd.GetColorSpace();
             var dict = ((PdfArray) colorSpace.GetPdfObject());
             var baseName = dict.Get(0);
-            var baseManager = GetSpaceByName(baseName);
+            var baseManager = (NormalColorManager)GetManagerBySpace(baseName);
             var lengthSpace = baseManager.LengthColor(baseName);
             var lookup = dict.Get(2);
             var index = (int)colorPfd.GetColorValue()[0];
@@ -37,11 +37,6 @@ namespace PdfRepresantation
 
             return baseManager.Color(value,alpha);
 
-        }
-
-        public override Color? Color(int[] value, float alpha)
-        {
-            return null;
         }
 
         public override int LengthColor(PdfObject o) => 1;
