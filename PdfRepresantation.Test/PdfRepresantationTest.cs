@@ -32,6 +32,8 @@ namespace PdfRepresantation.Test
             var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig { UseCanvas = true });
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
+                if(file.Extension!=".pdf")
+                    continue;
                 var name = Path.GetFileNameWithoutExtension(file.Name);
 //                if(name!="rotate")
 //                    continue;

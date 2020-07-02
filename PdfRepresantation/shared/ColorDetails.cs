@@ -24,6 +24,9 @@ namespace PdfRepresantation
     }
     public class GardientColorDetails:ColorDetails
     {
-        
+        public Color? ColorStart { get; set; }
+        public Color? ColorEnd { get; set; }
+        public ShapePoint Start { get; set; }
+        public ShapePoint End { get; set; }
     }
 }

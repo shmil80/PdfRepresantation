@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
+using iText.StyledXmlParser.Jsoup.Select;
 
 namespace PdfRepresantation
 {
     public class PdfDrawSvgHtmlWriter : PdfDrawHtmlWriter
     {
-
         public PdfDrawSvgHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
         {
         }
+
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
-    <svg class=""canvas"" height=""").Append(Math.Round(page.Height,2))
-                .Append("\" width=\"").Append(Math.Round(page.Width,2))
+    <svg class=""canvas"" height=""").Append(Math.Round(page.Height, 2))
+                .Append("\" width=\"").Append(Math.Round(page.Width, 2))
                 .Append("\">");
             AddShapesAndImages(page, sb);
 
@@ -27,23 +29,56 @@ namespace PdfRepresantation
         protected override void AddImage(PdfImageDetails image, StringBuilder sb)
         {
             sb.Append(@"
-        <image height=""").Append(Math.Round(image.Height,2))
+        <image height=""").Append(Math.Round(image.Height, 2))
                 .Append("\" width=\"")
-                .Append(Math.Round(image.Width,2)).Append("\" href=\"");
-            this.AssignPathImage(image,sb);            
-            sb.Append("\" x=\"").Append(Math.Round(image.Left,2))
-                .Append("\" y=\"").Append(Math.Round(image.Top,2)).Append("\"/>");
+                .Append(Math.Round(image.Width, 2)).Append("\" href=\"");
+            this.AssignPathImage(image, sb);
+            sb.Append("\" x=\"").Append(Math.Round(image.Left, 2))
+                .Append("\" y=\"").Append(Math.Round(image.Top, 2)).Append("\"/>");
             ;
         }
 
         private void AddPoint(ShapePoint p, StringBuilder sb)
         {
-            sb.Append(" ").Append(Math.Round(p.X,2)).Append(" ").Append(Math.Round(p.Y,2));
+            sb.Append(" ").Append(Math.Round(p.X, 2)).Append(" ").Append(Math.Round(p.Y, 2));
         }
 
-        protected override void AddShape(ShapeDetails shape, StringBuilder sb)
+        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
         {
-            if(shape.ShapeOperation==ShapeOperation.None)
+            sb.Append(@"        
+        <defs>");
+            foreach (var pair in gradients)
+            {
+                var i = pair.Value;
+                var g = pair.Key;
+                if (g.ColorStart == null||g.ColorEnd==null)
+                    continue;
+                sb.Append(@"
+            <linearGradient id=""gradient-").Append(i);
+                if (g.Start != null)
+                    sb.Append(@""" x1=""").Append(g.Start.X)
+                        .Append(@""" x2=""").Append(g.End.X)
+                        .Append(@""" y1=""").Append(g.Start.Y)
+                        .Append(@""" y2=""").Append(g.End.Y);
+                sb.Append(@""">
+                <stop offset=""0%"" stop-color=""");
+                if (g.ColorStart != null)
+                    PdfHtmlWriter.AppendColor(g.ColorStart.Value, sb);
+                sb.Append(@"""/>
+                <stop offset=""100%"" stop-color=""");
+                PdfHtmlWriter.AppendColor(g.ColorEnd.Value, sb);
+                sb.Append(@"""/>
+            </linearGradient>");
+            }
+
+            sb.Append(@"
+        </defs>").Append("");
+        }
+
+        protected override void AddShape(ShapeDetails shape, StringBuilder sb,
+            Dictionary<GardientColorDetails, int> gradients)
+        {
+            if (shape.ShapeOperation == ShapeOperation.None)
                 return;
             ShapePoint lastEnd = null;
             sb.Append(@"
@@ -82,23 +117,27 @@ namespace PdfRepresantation
 
             sb.Append("\" stroke-width=\"").Append(shape.LineWidth)
                 .Append("\" fill=\"");
-            AppendColor(shape.ShapeOperation==ShapeOperation.Stroke?null:shape.FillColor, sb);
-           if(shape.EvenOddRule)
+            AppendColor(shape.ShapeOperation == ShapeOperation.Stroke ? null : shape.FillColor, gradients, sb);
+            if (shape.EvenOddRule)
                 sb.Append("\" fill-rule=\"evenodd");
             sb.Append("\" stroke=\"");
-            AppendColor(shape.ShapeOperation==ShapeOperation.Fill?null:shape.StrokeColor, sb);
+            AppendColor(shape.ShapeOperation == ShapeOperation.Fill ? null : shape.StrokeColor, gradients, sb);
             sb.Append("\"/>");
         }
 
-        private void AppendColor(ColorDetails color, StringBuilder sb)
+        private void AppendColor(ColorDetails color, Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
         {
-            if (color is SimpleColorDetails simpleColor)
+            switch (color)
             {
-                PdfHtmlWriter.AppendColor(simpleColor.Color, sb);
-            }
-            else
-            {
-                sb.Append("transparent");
+                case SimpleColorDetails simpleColor:
+                    PdfHtmlWriter.AppendColor(simpleColor.Color, sb);
+                    break;
+                case GardientColorDetails g:
+                    sb.Append("url(#gradient-").Append(gradients[g]).Append(")");
+                    break;
+                default:
+                    sb.Append("transparent");
+                    break;
             }
         }
 

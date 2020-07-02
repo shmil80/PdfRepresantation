@@ -35,13 +35,15 @@ namespace PdfRepresantation
         protected override float[] CalculateImplemantaion(float[] inputs)
         {
             var input = inputs[0];
-            int i;
-            for (i = bounds.Length - 1; i >= 0; i--)
+            int i=0;
+            for (i = 0; i < bounds.Length; i++)
             {
-                if (bounds[i].Max > input)
+                if (bounds[i].Max >= input)
                     break;
             }
 
+            if (i == bounds.Length)
+                i--;
             inputs[0] = Range.Interpolate(input, bounds[i], encodes[i]);
             return functions[i].Calculate(inputs);
         }

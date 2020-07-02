@@ -46,6 +46,44 @@ namespace PdfRepresantation
 
         private GardientColorDetails GetColor(PdfPattern.Shading shading, float alpha)
         {
+            var shadingDetailsDict = shading.GetShading();
+            var shadingDetails = PdfShading.MakeShading(shadingDetailsDict);
+            var pdfFunction = shadingDetails.GetFunction();
+            var colorManager = GetManagerBySpace(shadingDetails.GetColorSpace()) as NormalColorManager;
+            if (colorManager == null)
+                return null;
+            GardientColorDetails result=new GardientColorDetails();
+            var coordsArray=shadingDetails.GetPdfObject().GetAsArray(PdfName.Coords);
+            if (coordsArray != null)
+            {
+                var coords = coordsArray.ToFloatArray();
+                result.Start=new ShapePoint{X = coords[0],Y = coords[1]};
+                result.End=new ShapePoint{X = coords[2],Y = coords[3]};
+            }
+                    var arr0 = new[] {0F};
+                    var arr1 = new[] {1F};
+            switch (pdfFunction)
+            {
+                case PdfDictionary dictFunc:
+                    var function = Function.Create(dictFunc);
+                    result.ColorStart = colorManager.Color(function.Calculate(arr0), alpha);
+                    result.ColorEnd = colorManager.Color(function.Calculate(arr1), alpha);
+                    break;
+                case PdfArray arrayFunc:
+                    var functions = arrayFunc
+                        .Select(d => Function.Create((PdfDictionary) d))
+                        .ToArray();
+                    result.ColorStart = colorManager.Color(functions.Select(f=>f.Calculate(arr0)[0]).ToArray(), alpha);
+                    result.ColorEnd = colorManager.Color(functions.Select(f=>f.Calculate(arr0)[1]).ToArray(), alpha);
+                    break;
+            }
+
+            return result;
+        }
+
+        //not supported yet
+        private GardientColorDetails GetFullColor(PdfPattern.Shading shading, float alpha)
+        {
             var matrix = shading.GetMatrix();
             var shadingDetailsDict = shading.GetShading();
             var shadingDetails = PdfShading.MakeShading(shadingDetailsDict);
@@ -53,17 +91,12 @@ namespace PdfRepresantation
             var function = Function.Create(pdfFunction);
             var colorManager = GetManagerBySpace(shadingDetails.GetColorSpace());
             var background = shadingDetails.GetPdfObject().GetAsArray(new PdfName("background"))?.ToFloatArray();
-            float[] domain, coords;
-            bool[] extend;
             switch (shadingDetails)
             {
                 case PdfShading.Axial axial:
                     return GetAxialColor(axial);
                 case PdfShading.Radial radial:
-                    coords = radial.GetCoords().ToFloatArray();
-                    domain = radial.GetDomain().ToFloatArray();
-                    extend = radial.GetExtend().ToBooleanArray();
-                    break;
+                    return GetRadialColor(radial);
                 case PdfShading.FunctionBased functionBased:
                     FunctionBasedColor(functionBased);
                     break;
@@ -78,20 +111,31 @@ namespace PdfRepresantation
             return null;
         }
 
-        private static GardientColorDetails GetAxialColor(PdfShading.Axial axial1)
+        private static GardientColorDetails GetAxialColor(PdfShading.Axial axial)
         {
-            float[] coords;
-            float[] domain;
-            bool[] extend;
-            coords = axial1.GetCoords().ToFloatArray();
-            domain = axial1.GetDomain().ToFloatArray();
-            extend = axial1.GetExtend().ToBooleanArray();
+            var coords = axial.GetCoords().ToFloatArray();
+            var domain = axial.GetDomain().ToFloatArray();
+            var extend = axial.GetExtend().ToBooleanArray();
+            BuildFunction(axial);
+            return null;
+        }
+        private static GardientColorDetails GetRadialColor(PdfShading.Radial radial)
+        {
+            var coords = radial.GetCoords().ToFloatArray();
+            var domain = radial.GetDomain().ToFloatArray();
+            var extend = radial.GetExtend().ToBooleanArray();
+            BuildFunction(radial);
             return null;
         }
 
         private static void FunctionBasedColor(PdfShading.FunctionBased functionBased)
         {
             float[] domain = functionBased.GetDomain().ToFloatArray();
+            BuildFunction(functionBased);
+        }
+
+        private static void BuildFunction(PdfShading functionBased)
+        {
             var pdfFunction = functionBased.GetFunction();
             if (pdfFunction is PdfDictionary dictFunc)
             {

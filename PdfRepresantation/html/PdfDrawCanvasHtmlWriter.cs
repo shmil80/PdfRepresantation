@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -33,7 +34,13 @@ namespace PdfRepresantation
     </script>");
         }
 
-        protected override void AddShape(ShapeDetails shape, StringBuilder sb)
+        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
+        {
+            
+        }
+
+        protected override void AddShape(ShapeDetails shape, StringBuilder sb,
+            Dictionary<GardientColorDetails, int> gradients)
         {
             sb.Append(@"
         draw([");

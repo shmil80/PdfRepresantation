@@ -10,7 +10,7 @@ namespace PdfRepresantation
         public virtual void DrawShape(Graphics graphics, PdfPageDetails page, ShapeDetails shape, float top)
         {
             GraphicsPath path = new GraphicsPath();
-            CreateLinesInPath(path, shape.Lines,top);
+            CreateLinesInPath(path, shape.Lines, top);
             switch (shape.ShapeOperation)
             {
                 case ShapeOperation.Stroke:
@@ -26,27 +26,27 @@ namespace PdfRepresantation
             }
         }
 
-        protected virtual void CreateLinesInPath(GraphicsPath path, IList<ShapeLine> lines,float top)
+        protected virtual void CreateLinesInPath(GraphicsPath path, IList<ShapeLine> lines, float top)
         {
             foreach (var line in lines)
             {
-                var start = new PointF(line.Start.X,top+ line.Start.Y);
+                var start = new PointF(line.Start.X, top + line.Start.Y);
                 var end = new PointF(line.End.X, top + line.End.Y);
                 if (line.CurveControlPoint1 == null)
                 {
                     path.AddLine(start, end);
                     continue;
                 }
+
                 var controlPoint1 = new PointF(line.CurveControlPoint1.X, top + line.CurveControlPoint1.Y);
                 if (line.CurveControlPoint2 == null)
                 {
-                    path.AddBeziers(new PointF[] { start, controlPoint1, end });
+                    path.AddBeziers(new PointF[] {start, controlPoint1, end});
                     continue;
                 }
+
                 var controlPoint2 = new PointF(line.CurveControlPoint2.X, top + line.CurveControlPoint2.Y);
                 path.AddBezier(start, controlPoint1, controlPoint2, end);
-
-
             }
         }
 
@@ -78,9 +78,15 @@ namespace PdfRepresantation
                     brush = new SolidBrush(simpleColor.Color);
                     break;
                 case GardientColorDetails gardientColor:
-                    //TODO
-                    brush=Brushes.Blue;                    
-//                    brush = new LinearGradientBrush();
+                    if (gardientColor.ColorStart == null || gardientColor.ColorEnd == null)
+                        return Brushes.Blue;
+
+                    brush = new LinearGradientBrush(
+                        new PointF(gardientColor.Start.X, gardientColor.Start.Y),
+                        new PointF(gardientColor.End.X, gardientColor.End.Y),
+                        gardientColor.ColorStart.Value,
+                        gardientColor.ColorEnd.Value);
+
                     break;
                 default: throw new IndexOutOfRangeException();
             }
