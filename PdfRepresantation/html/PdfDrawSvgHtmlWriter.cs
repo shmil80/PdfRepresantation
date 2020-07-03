@@ -51,23 +51,28 @@ namespace PdfRepresantation
             {
                 var i = pair.Value;
                 var g = pair.Key;
-                if (g.ColorStart == null||g.ColorEnd==null)
+                if (g.Colors.Count == 0)
                     continue;
                 sb.Append(@"
             <linearGradient id=""gradient-").Append(i);
-                if (g.ColorStart != null)
-                    sb.Append(@""" x1=""").Append(g.ColorStart.RelativeX.ToString("P2"))
-                        .Append(@""" x2=""").Append(g.ColorEnd.RelativeX.ToString("P2"))
-                        .Append(@""" y1=""").Append(g.ColorStart.RelativeY.ToString("P2"))
-                        .Append(@""" y2=""").Append(g.ColorEnd.RelativeY.ToString("P2"));
-                sb.Append(@""">
-                <stop offset=""0%"" stop-color=""");
-                if (g.ColorStart != null)
-                    PdfHtmlWriter.AppendColor(g.ColorStart.Color, sb);
-                sb.Append(@"""/>
-                <stop offset=""100%"" stop-color=""");
-                PdfHtmlWriter.AppendColor(g.ColorEnd.Color, sb);
-                sb.Append(@"""/>
+                if (g.Start != null)
+                    sb.Append(@""" x1=""").Append(g.Start.RelativeX.ToString("P2"))
+                        .Append(@""" x2=""").Append(g.End.RelativeX.ToString("P2"))
+                        .Append(@""" y1=""").Append(g.Start.RelativeY.ToString("P2"))
+                        .Append(@""" y2=""").Append(g.End.RelativeY.ToString("P2"));
+                sb.Append(@""">");
+                foreach (var color in g.Colors)
+                {
+                    sb.Append(@"
+                <stop ");
+                    if (color.OffSet.HasValue)
+                        sb.Append(@"offset=""").Append(color.OffSet.Value.ToString("P2")).Append(@"""");
+                    sb.Append(@" stop-color=""");
+                    PdfHtmlWriter.AppendColor(color.Color, sb);
+                    sb.Append(@"""/>");
+                }
+
+                sb.Append(@"
             </linearGradient>");
             }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using iText.Kernel.Colors;
@@ -8,7 +9,6 @@ using Color = System.Drawing.Color;
 
 namespace PdfRepresantation
 {
-     
     /// <summary>
     /// This class try to get the details from gradient color of pdf which are nessecary for to html and image.</br>
     /// Since there are many difference between the way pdf and others draw a gradient this is not easy at all.
@@ -20,9 +20,9 @@ namespace PdfRepresantation
 
         protected override ColorSpace Type => ColorSpace.Pattern;
 
-        public override ColorDetails GetColorDetails(PdfPage page,iText.Kernel.Colors.Color colorPfd, float alpha)
+        public override ColorDetails GetColorDetails(PdfPage page, iText.Kernel.Colors.Color colorPfd, float alpha)
         {
-            return GetColor(page,(colorPfd as PatternColor)?.GetPattern(), alpha);
+            return GetColor(page, (colorPfd as PatternColor)?.GetPattern(), alpha);
         }
 
         internal override Color? Color(iText.Kernel.Colors.Color colorPfd, float alpha)
@@ -35,7 +35,7 @@ namespace PdfRepresantation
             return -1;
         }
 
-        private GardientColorDetails GetColor(PdfPage page,PdfPattern pattern, float alpha)
+        private GardientColorDetails GetColor(PdfPage page, PdfPattern pattern, float alpha)
         {
             //not supported yet
             // return null;
@@ -43,26 +43,38 @@ namespace PdfRepresantation
             {
                 case null: return null;
                 case PdfPattern.Shading shading:
-                    return GetColor(page,shading, alpha);
+                    return GetColor(page, shading, alpha);
                 case PdfPattern.Tiling tiling:
-                    return GetColor(page,tiling, alpha);
+                    return GetColor(page, tiling, alpha);
                 default: throw new IndexOutOfRangeException();
             }
         }
 
 
-        private Color?[] GetColorsFromFunction(NormalColorManager colorManager,
-            PdfObject pdfFunction, float alpha,
-            params float[][] values)
+        private IList<ColorInGardient> GetColorsFromFunction(NormalColorManager colorManager,
+            PdfObject pdfFunction, float alpha)
         {
-            Color?[] result = new Color?[values.Length];
+            var result = new List<ColorInGardient>();
+            IList<float> pointBreaks;
+            var lastOffset = 0F;
             switch (pdfFunction)
             {
                 case PdfDictionary dictFunc:
                     var function = Function.Create(dictFunc);
-                    for (var index = 0; index < values.Length; index++)
+                    pointBreaks = CreatePointBreaks(function);
+                    for (var index = 0; index < pointBreaks.Count; index++)
                     {
-                        result[index] = colorManager.Color(function.Calculate(values[index]), alpha);
+                        var offset = pointBreaks[index];
+                        var color = colorManager.Color(function.Calculate(new[] {offset}), alpha);
+                        if (color.HasValue)
+                        {
+                            result.Add(new ColorInGardient
+                            {
+                                OffSet = offset - lastOffset,
+                                Color = color.Value
+                            });
+                            //lastOffset += offset;
+                        }
                     }
 
                     break;
@@ -70,11 +82,22 @@ namespace PdfRepresantation
                     var functions = arrayFunc
                         .Select(d => Function.Create((PdfDictionary) d))
                         .ToArray();
-                    for (var index = 0; index < values.Length; index++)
+                    pointBreaks = CreatePointBreaks(functions[0]);
+                    for (var index = 0; index < pointBreaks.Count; index++)
                     {
-                        result[index] = colorManager.Color(functions
-                            .Select(f => f.Calculate(values[index])[0])
+                        var offset = pointBreaks[index];
+                        var color = colorManager.Color(functions
+                            .Select(f => f.Calculate(new[] {offset})[0])
                             .ToArray(), alpha);
+                        if (color.HasValue)
+                        {
+                            result.Add(new ColorInGardient
+                            {
+                                OffSet = offset - lastOffset,
+                                Color = color.Value
+                            });
+                            //lastOffset += offset;
+                        }
                     }
 
                     break;
@@ -83,14 +106,47 @@ namespace PdfRepresantation
             return result;
         }
 
+        private static IList<float> CreatePointBreaks(Function function)
+        {
+            switch (function)
+            {
+                case ExpFunction _:
+                case PostScriptFunction _:
+                    return Enumerable.Range(0, 11)
+                        .Select(i => i / 10F)
+                        .ToArray();
+                case SampledFunction _:
+                    return new[] {0F, 1F};
+                case StitchFunction stitch:
+                    float[] result=new float[stitch.bounds.Length+1];
+                    for (var i = 0; i < stitch.bounds.Length; i++)
+                    {
+                        result[i] = stitch.bounds[i].Min;
+                    }
 
-        public static void CalculteRelativePosition(ColorInGardient gradient,
+                    result[stitch.bounds.Length] = stitch.bounds.Last().Max;
+                    return result;
+                default:
+                    throw new IndexOutOfRangeException();
+            }
+        }
+
+
+        public static void CalculteRelativePosition(GardientColorDetails gradient,
             float minX, float minY, float maxX, float maxY)
         {
-            gradient.RelativeX=(gradient.AbsoluteX-minX)/(maxX-minX);
-            gradient.RelativeY=(gradient.AbsoluteY-minY)/(maxY-minY);
+            NewMethod(gradient.Start, minX, minY, maxX, maxY);
+            NewMethod(gradient.End, minX, minY, maxX, maxY);
         }
-        private GardientColorDetails GetColor(PdfPage page,PdfPattern.Shading shading, float alpha)
+
+        private static void NewMethod(GardientPoint point, float minX, float minY, float maxX, float maxY)
+        {
+            point.RelativeX = (point.AbsoluteX - minX) / (maxX - minX);
+            point.RelativeY = (point.AbsoluteY - minY) / (maxY - minY);
+        }
+
+
+        private GardientColorDetails GetColor(PdfPage page, PdfPattern.Shading shading, float alpha)
         {
             var shadingDetailsDict = shading.GetShading();
             var shadingDetails = PdfShading.MakeShading(shadingDetailsDict);
@@ -99,30 +155,28 @@ namespace PdfRepresantation
             GardientColorDetails result = new GardientColorDetails();
 
             var pdfFunction = shadingDetails.GetFunction();
-            var colors = GetColorsFromFunction(colorManager, pdfFunction, alpha,
-                new[] {0F},new[] {1F});
-            if(colors[0].HasValue)
-            result.ColorStart =new ColorInGardient{Color= colors[0].Value};
-            if(colors[1].HasValue)
-            result.ColorEnd = new ColorInGardient{Color= colors[1].Value};
-            
+            var pointsBreak = new[] {0F, 1F};
+            var colors = GetColorsFromFunction(colorManager, pdfFunction, alpha);
+            result.Colors = colors;
+
+
             var coordsArray = shadingDetails.GetPdfObject().GetAsArray(PdfName.Coords);
             if (coordsArray != null)
             {
                 var coords = coordsArray.ToFloatArray();
-                if (result.ColorStart != null)
+                result.Start = new GardientPoint
                 {
-                    result.ColorStart.AbsoluteX = coords[0];
-                    result.ColorStart.AbsoluteY = page.GetPageSize().GetHeight()-coords[1];
-                }
+                    AbsoluteX = coords[0],
+                    AbsoluteY = page.GetPageSize().GetHeight() - coords[1]
+                };
 
-                if (result.ColorEnd != null)
+                result.End = new GardientPoint
                 {
-                    result.ColorEnd.AbsoluteX = coords[2];
-                    result.ColorEnd.AbsoluteY = page.GetPageSize().GetHeight()-coords[3];
-                }
+                    AbsoluteX = coords[2],
+                    AbsoluteY = page.GetPageSize().GetHeight() - coords[3]
+                };
             }
-            
+
             return result;
         }
 

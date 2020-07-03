@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using iText.Kernel.Pdf.Colorspace;
 
 namespace PdfRepresantation
@@ -24,15 +25,20 @@ namespace PdfRepresantation
     }
     public class GardientColorDetails:ColorDetails
     {
-        public ColorInGardient ColorStart { get; set; }
-        public ColorInGardient ColorEnd { get; set; }
+        public GardientPoint Start { get; set; }
+        public GardientPoint End { get; set; }
+        public IList<ColorInGardient> Colors { get; set; }
     }
     public class ColorInGardient
     {
         public Color Color { get; set; }
-        public float RelativeX { get; set; }
+        public float? OffSet { get; set; }
+    }
+    public class GardientPoint
+    {
         public float AbsoluteX { get; set; }
-        public float RelativeY { get; set; }
         public float AbsoluteY { get; set; }
+        public float RelativeX { get; set; }
+        public float RelativeY { get; set; }
     }
 }

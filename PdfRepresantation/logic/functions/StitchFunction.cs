@@ -6,8 +6,8 @@ namespace PdfRepresantation
 {
     public class StitchFunction : Function
     {
-        private readonly Function[] functions;
-        private readonly Range[] bounds;
+        public readonly Function[] functions;
+        public readonly Range[] bounds;
         private readonly Range[] encodes;
 
         public StitchFunction(PdfDictionary dict) : base(dict)

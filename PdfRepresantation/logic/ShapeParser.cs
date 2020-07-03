@@ -53,9 +53,7 @@ namespace PdfRepresantation
                 var minY = shapeDetails.MinY;
                 var maxX = shapeDetails.MaxX;
                 var maxY = shapeDetails.MaxY;
-                ColorManagerPattern.CalculteRelativePosition(gradient.ColorStart,
-                    minX,minY,maxX,maxY);
-                ColorManagerPattern.CalculteRelativePosition(gradient.ColorEnd,
+                ColorManagerPattern.CalculteRelativePosition(gradient,
                     minX,minY,maxX,maxY);
             }
 

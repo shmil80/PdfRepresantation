@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace PdfRepresantation
 {
@@ -78,14 +79,14 @@ namespace PdfRepresantation
                     brush = new SolidBrush(simpleColor.Color);
                     break;
                 case GardientColorDetails gardientColor:
-                    if (gardientColor.ColorStart == null || gardientColor.ColorEnd == null)
+                    if (gardientColor.Colors.Count<2)
                         return Brushes.Blue;
 
                     brush = new LinearGradientBrush(
-                        new PointF(gardientColor.ColorStart.AbsoluteX, gardientColor.ColorStart.AbsoluteY),
-                        new PointF(gardientColor.ColorEnd.AbsoluteX, gardientColor.ColorEnd.AbsoluteX),
-                        gardientColor.ColorStart.Color,
-                        gardientColor.ColorEnd.Color);
+                        new PointF(gardientColor.Start.AbsoluteX, gardientColor.Start.AbsoluteY),
+                        new PointF(gardientColor.End.AbsoluteX, gardientColor.End.AbsoluteX),
+                        gardientColor.Colors[0].Color,
+                        gardientColor.Colors.Last().Color);
 
                     break;
                 default: throw new IndexOutOfRangeException();
