@@ -9,10 +9,7 @@ namespace PdfRepresantation.postScript
             var condition = (BoolOperand) stack.Pop();
             var block = (CodeExecution) stack.Pop();
             if (condition.Value)
-                foreach (var @operator in block.Code)
-                {
-                    @operator.Apply(stack);
-                }
+                block.Execute(stack);
         }
     }
     class IfElseOperator : Operator
@@ -23,10 +20,7 @@ namespace PdfRepresantation.postScript
             var blockFalse = (CodeExecution) stack.Pop();
             var blockTrue = (CodeExecution) stack.Pop();
             var block = condition.Value ? blockTrue : blockFalse;
-            foreach (var @operator in block.Code)
-            {
-                @operator.Apply(stack);
-            }
+            block.Execute(stack);
         }
     }
 }

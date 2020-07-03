@@ -25,18 +25,18 @@ namespace PdfRepresantation
             if (shapeOperation == ShapeOperation.None)
                 return;
             bool evenOddRule = data.GetRule() == PdfCanvasConstants.FillingRule.EVEN_ODD;
-            var fillColor = ColorManager.GetColor(data.GetFillColor(),data.GetGraphicsState().GetFillOpacity());
+            var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),data.GetGraphicsState().GetFillOpacity());
             if (shapeOperation != ShapeOperation.Stroke && fillColor == null )
                 return;
-            var strokeColor = ColorManager.GetColor(data.GetStrokeColor(),data.GetGraphicsState().GetStrokeOpacity());
+            
+            var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),data.GetGraphicsState().GetStrokeOpacity());
             var lineWidth = data.GetLineWidth();
             var lineCap = data.GetLineCapStyle();
             var ctm = data.GetCtm();
             var lines = ConvertLines(data.GetPath(), ctm).ToArray();
             if(lines.Length==0)
                 return;
-            
-
+         
             var shapeDetails = new ShapeDetails
             {
                 ShapeOperation = shapeOperation,
@@ -47,6 +47,18 @@ namespace PdfRepresantation
                 Lines = lines,
                 Order = orderIndex
             };
+            if (fillColor is GardientColorDetails gradient)
+            {
+                var minX = shapeDetails.MinX;
+                var minY = shapeDetails.MinY;
+                var maxX = shapeDetails.MaxX;
+                var maxY = shapeDetails.MaxY;
+                ColorManagerPattern.CalculteRelativePosition(gradient.ColorStart,
+                    minX,minY,maxX,maxY);
+                ColorManagerPattern.CalculteRelativePosition(gradient.ColorEnd,
+                    minX,minY,maxX,maxY);
+            }
+
             if (Log.DebugSupported)
             {
                 Log.Debug($"shape: {shapeDetails}");

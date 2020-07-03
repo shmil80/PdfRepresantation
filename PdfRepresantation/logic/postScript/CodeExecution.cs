@@ -9,13 +9,17 @@ namespace PdfRepresantation.postScript
 
         public IList<ValueOperand> Execute(params ValueOperand[] parameters)
         {
-            Stack<Operand> stack = new Stack<Operand>(parameters);
+            var stack = new Stack<Operand>(parameters);
+            Execute(stack);
+            return stack.Cast<ValueOperand>().ToArray();
+        }
+
+        public void Execute(Stack<Operand> stack)
+        {
             foreach (var @operator in Code)
             {
                 @operator.Apply(stack);
             }
-
-            return stack.Cast<ValueOperand>().ToArray();
         }
     }
 }

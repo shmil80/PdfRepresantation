@@ -43,7 +43,7 @@ namespace PdfRepresantation
                 Height = position.Height,
                 Rotation = position.Angle,
                 BottomInOwnPlane = pageContext.PageHeight -position.BottomInOwnPlane,
-                StrokeColore = TextRenderManager.GetColor(textRenderInfo),
+                StrokeColore = TextRenderManager.GetColor(pageContext.Page, textRenderInfo),
                 CharSpacing = textRenderInfo.GetSingleSpaceWidth(),
                 Font = GetFont(textRenderInfo),
             };

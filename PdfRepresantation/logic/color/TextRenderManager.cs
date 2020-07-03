@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Drawing;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 
 namespace PdfRepresantation
 {
     class TextRenderManager
     {
-        public static TextRenderDetails GetColor(TextRenderInfo text)
+        public static TextRenderDetails GetColor(PdfPage page,TextRenderInfo text)
         {
             var gs = text.GetGraphicsState();
             var result = new TextRenderDetails
             {
                 Option = GetOption(text),
-                FillColor = ColorManager.GetColor(text.GetFillColor(), gs.GetFillOpacity()),
-                StrokeColor = ColorManager.GetColor(text.GetStrokeColor(), gs.GetStrokeOpacity())
+                FillColor = ColorManager.GetColor(page, text.GetFillColor(), gs.GetFillOpacity()),
+                StrokeColor = ColorManager.GetColor(page, text.GetStrokeColor(), gs.GetStrokeOpacity())
             };
             result.MainColor = ChooseMain(result);
             return result;

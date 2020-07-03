@@ -56,13 +56,13 @@ namespace PdfRepresantation
         protected abstract ColorSpace Type { get; }
         internal abstract Color? Color(iText.Kernel.Colors.Color colorPfd, float alpha);
 
-        public static ColorDetails GetColor(iText.Kernel.Colors.Color colorPfd, float alpha)
+        public static ColorDetails GetColor(PdfPage page, iText.Kernel.Colors.Color colorPfd, float alpha)
         {
             var manager = GetManagerByType(colorPfd);
-            return manager.GetColorDetails(colorPfd, alpha);
+            return manager.GetColorDetails(page,colorPfd, alpha);
         }
 
-        public virtual ColorDetails GetColorDetails(iText.Kernel.Colors.Color colorPfd, float alpha)
+        public virtual ColorDetails GetColorDetails(PdfPage page, iText.Kernel.Colors.Color colorPfd, float alpha)
         {
             var color = Color(colorPfd, alpha);
             if (color == null)

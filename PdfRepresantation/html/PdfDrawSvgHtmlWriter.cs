@@ -55,18 +55,18 @@ namespace PdfRepresantation
                     continue;
                 sb.Append(@"
             <linearGradient id=""gradient-").Append(i);
-                if (g.Start != null)
-                    sb.Append(@""" x1=""").Append(g.Start.X)
-                        .Append(@""" x2=""").Append(g.End.X)
-                        .Append(@""" y1=""").Append(g.Start.Y)
-                        .Append(@""" y2=""").Append(g.End.Y);
+                if (g.ColorStart != null)
+                    sb.Append(@""" x1=""").Append(g.ColorStart.RelativeX.ToString("P2"))
+                        .Append(@""" x2=""").Append(g.ColorEnd.RelativeX.ToString("P2"))
+                        .Append(@""" y1=""").Append(g.ColorStart.RelativeY.ToString("P2"))
+                        .Append(@""" y2=""").Append(g.ColorEnd.RelativeY.ToString("P2"));
                 sb.Append(@""">
                 <stop offset=""0%"" stop-color=""");
                 if (g.ColorStart != null)
-                    PdfHtmlWriter.AppendColor(g.ColorStart.Value, sb);
+                    PdfHtmlWriter.AppendColor(g.ColorStart.Color, sb);
                 sb.Append(@"""/>
                 <stop offset=""100%"" stop-color=""");
-                PdfHtmlWriter.AppendColor(g.ColorEnd.Value, sb);
+                PdfHtmlWriter.AppendColor(g.ColorEnd.Color, sb);
                 sb.Append(@"""/>
             </linearGradient>");
             }

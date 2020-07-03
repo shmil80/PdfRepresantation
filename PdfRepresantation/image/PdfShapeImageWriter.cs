@@ -82,10 +82,10 @@ namespace PdfRepresantation
                         return Brushes.Blue;
 
                     brush = new LinearGradientBrush(
-                        new PointF(gardientColor.Start.X, gardientColor.Start.Y),
-                        new PointF(gardientColor.End.X, gardientColor.End.Y),
-                        gardientColor.ColorStart.Value,
-                        gardientColor.ColorEnd.Value);
+                        new PointF(gardientColor.ColorStart.AbsoluteX, gardientColor.ColorStart.AbsoluteY),
+                        new PointF(gardientColor.ColorEnd.AbsoluteX, gardientColor.ColorEnd.AbsoluteX),
+                        gardientColor.ColorStart.Color,
+                        gardientColor.ColorEnd.Color);
 
                     break;
                 default: throw new IndexOutOfRangeException();

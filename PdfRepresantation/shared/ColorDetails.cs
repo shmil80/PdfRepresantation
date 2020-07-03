@@ -24,9 +24,15 @@ namespace PdfRepresantation
     }
     public class GardientColorDetails:ColorDetails
     {
-        public Color? ColorStart { get; set; }
-        public Color? ColorEnd { get; set; }
-        public ShapePoint Start { get; set; }
-        public ShapePoint End { get; set; }
+        public ColorInGardient ColorStart { get; set; }
+        public ColorInGardient ColorEnd { get; set; }
+    }
+    public class ColorInGardient
+    {
+        public Color Color { get; set; }
+        public float RelativeX { get; set; }
+        public float AbsoluteX { get; set; }
+        public float RelativeY { get; set; }
+        public float AbsoluteY { get; set; }
     }
 }

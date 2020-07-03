@@ -23,21 +23,21 @@ namespace PdfRepresantation
         public IList<ShapeLine> Lines = new List<ShapeLine>();
         public float LineWidth { get; set; }
         public bool EvenOddRule { get; set; }
+       public float MinX => Lines.Min(l => l.AllPoints.Min(p => p.X));
+       public float MinY => Lines.Min(l => l.AllPoints.Min(p => p.Y));
+       public float MaxX => Lines.Max(l => l.AllPoints.Max(p => p.X));
+       public float MaxY => Lines.Max(l => l.AllPoints.Max(p => p.Y));
 
         public override string ToString()
         {
-            var minX = Lines.Min(l => l.AllPoints.Min(p => p.X));
-            var minY = Lines.Min(l => l.AllPoints.Min(p => p.Y));
-            var maxX = Lines.Max(l => l.AllPoints.Max(p => p.X));
-            var maxY = Lines.Max(l => l.AllPoints.Max(p => p.Y));
             var sb = new StringBuilder();
             sb.Append("").Append("")
                 .Append("start:")
-                .Append(minX.ToString("F2")).Append(",")
-                .Append(minY.ToString("F2"))
+                .Append(MinX.ToString("F2")).Append(",")
+                .Append(MinY.ToString("F2"))
                 .Append(" end:")
-                .Append(maxX.ToString("F2")).Append(",")
-                .Append(maxY.ToString("F2"));
+                .Append(MaxX.ToString("F2")).Append(",")
+                .Append(MaxY.ToString("F2"));
             switch (ShapeOperation)
             {
                 case ShapeOperation.None: break;
