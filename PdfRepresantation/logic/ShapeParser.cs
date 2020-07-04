@@ -22,52 +22,91 @@ namespace PdfRepresantation
         public virtual void ParsePath(PathRenderInfo data, int orderIndex)
         {
             var shapeOperation = (ShapeOperation) data.GetOperation();
-            if (shapeOperation == ShapeOperation.None)
-                return;
             bool evenOddRule = data.GetRule() == PdfCanvasConstants.FillingRule.EVEN_ODD;
-            var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),data.GetGraphicsState().GetFillOpacity());
-            if (shapeOperation != ShapeOperation.Stroke && fillColor == null )
-                return;
-            
-            var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),data.GetGraphicsState().GetStrokeOpacity());
             var lineWidth = data.GetLineWidth();
-            var lineCap = data.GetLineCapStyle();
-            var ctm = data.GetCtm();
-            var lines = ConvertLines(data.GetPath(), ctm).ToArray();
-            if(lines.Length==0)
-                return;
-         
-            var shapeDetails = new ShapeDetails
+            var shapeDetails = new BaseShapeDetails
             {
                 ShapeOperation = shapeOperation,
-                StrokeColor = strokeColor,
-                FillColor = fillColor,
                 LineWidth = lineWidth,
                 EvenOddRule = evenOddRule,
+            };
+            if (shapeOperation == ShapeOperation.None)
+                GetClippingPath(data,shapeDetails);
+            else
+                AddShapeToDraw(data, shapeDetails,orderIndex);
+        }
+
+        private void GetClippingPath(PathRenderInfo data, BaseShapeDetails baseShape)
+        {
+            //TODO not working yet. need adjusment on position and size.
+            return;
+            var lines = ConvertLines(data.GetPath(), null).ToArray();
+            if (lines.Length == 0)
+                return;
+            var ctm = data.GetCtm();
+            var scaleWidth = ctm.Get(Matrix.I11);
+            var scaleHeight = ctm.Get(Matrix.I22);
+            var x = ctm.Get(Matrix.I31);
+            var y = ctm.Get(Matrix.I32);
+            ClippingPath path = new ClippingPath
+            {
+                EvenOddRule = baseShape.EvenOddRule,
                 Lines = lines,
-                Order = orderIndex
+                LineWidth = baseShape.LineWidth,
+                ShapeOperation = baseShape.ShapeOperation,
+                ScaleHeight = scaleHeight,
+                ScaleWidth = scaleWidth,
+                X = x,
+                Y = y
+            };
+            pageContext.CurrentBBox = path;
+        }
+
+
+        private void AddShapeToDraw(PathRenderInfo data, BaseShapeDetails baseShape,int orderIndex)
+        {
+            var lines = ConvertLines(data.GetPath(), data.GetCtm()).ToArray();
+            if (lines.Length == 0)
+                return;
+            var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),
+                data.GetGraphicsState().GetFillOpacity());
+            if (baseShape.ShapeOperation != ShapeOperation.Stroke && fillColor == null)
+                return;
+            var shape = new ShapeDetails
+            {
+                Order = orderIndex,
+                EvenOddRule = baseShape.EvenOddRule,
+                Lines = lines,
+                LineWidth = baseShape.LineWidth,
+                ShapeOperation = baseShape.ShapeOperation,
             };
             if (fillColor is GardientColorDetails gradient)
             {
-                var minX = shapeDetails.MinX;
-                var minY = shapeDetails.MinY;
-                var maxX = shapeDetails.MaxX;
-                var maxY = shapeDetails.MaxY;
+                var minX = shape.MinX;
+                var minY = shape.MinY;
+                var maxX = shape.MaxX;
+                var maxY = shape.MaxY;
                 ColorManagerPattern.CalculteRelativePosition(gradient,
-                    minX,minY,maxX,maxY);
+                    minX, minY, maxX, maxY);
             }
 
+            var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),
+                data.GetGraphicsState().GetStrokeOpacity());
+            var lineCap = data.GetLineCapStyle();
+            shape.StrokeColor = strokeColor;
+            shape.FillColor = fillColor;
             if (Log.DebugSupported)
             {
-                Log.Debug($"shape: {shapeDetails}");
+                Log.Debug($"shape: {shape}");
             }
-            shapes.Add(shapeDetails);
+
+            shapes.Add(shape);
         }
 
         protected IEnumerable<ShapeLine> ConvertLines(Path path, Matrix ctm)
         {
             return from subpath in path.GetSubpaths()
-                from line in subpath.GetSegments() 
+                from line in subpath.GetSegments()
                 select ConvertLine(line, ctm);
         }
 
@@ -93,6 +132,12 @@ namespace PdfRepresantation
 
         protected ShapePoint ConvertPoint(Point p, Matrix ctm)
         {
+            if (ctm == null)
+                return new ShapePoint
+                {
+                    X = (float)p.x,
+                    Y =  (float)p.y
+                };
             Vector vector = new Vector((float) p.x, (float) p.y, 1);
             vector = vector.Cross(ctm);
             return new ShapePoint

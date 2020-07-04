@@ -37,6 +37,8 @@ namespace PdfRepresantation.Test
                 var name = Path.GetFileNameWithoutExtension(file.Name);
 //                if(name!="rotate")
 //                    continue;
+                if(name!="pdf-020")
+                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);

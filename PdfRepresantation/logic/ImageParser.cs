@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using iText.IO.Image;
 using iText.Kernel.Colors;
-using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
+using iText.Kernel.Pdf.Canvas.Parser.Filter;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Kernel.Pdf.Canvas.Wmf;
 using iText.Kernel.Pdf.Xobject;
 using Org.BouncyCastle.Crypto.Modes;
 using Color = System.Drawing.Color;
 using Image = iText.Layout.Element.Image;
 using IOException = iText.IO.IOException;
+using Matrix = iText.Kernel.Geom.Matrix;
 using Point = iText.Kernel.Geom.Point;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -31,12 +34,13 @@ namespace PdfRepresantation
             this.pageContext = pageContext;
         }
 
+
         public virtual void ParseImage(ImageRenderInfo data, int orderIndex)
         {
-            byte[] bytes;
+            ImageWrapper imageWrapper;
             try
             {
-                bytes = data.GetImage().GetImageBytes();
+                imageWrapper = new ImageWrapper {Buffer = data.GetImage().GetImageBytes()};
             }
             catch (IOException e)
             {
@@ -44,9 +48,6 @@ namespace PdfRepresantation
                 //wrong format of image
                 return;
             }
-            
-            if (!MergeSoftMask(data, ref bytes))
-                ApplyMask(data, ref bytes);
 
             // var start = data.GetStartPoint();
             var ctm = data.GetImageCtm();
@@ -54,9 +55,8 @@ namespace PdfRepresantation
             var height = ctm.Get(Matrix.I22);
             var x = ctm.Get(Matrix.I31);
             var y = pageContext.PageHeight - ctm.Get(Matrix.I32);
-            images.Add(new PdfImageDetails
+            var image = new PdfImageDetails
             {
-                Buffer = bytes,
                 Bottom = y,
                 Top = y - height,
                 Left = x,
@@ -64,10 +64,58 @@ namespace PdfRepresantation
                 Width = width,
                 Height = height,
                 Order = orderIndex,
-            });
+            };
+            if (!MergeSoftMask(data, imageWrapper))
+                ApplyMask(data, imageWrapper);
+            if (pageContext.CurrentBBox != null)
+            {
+                var bBoxMask = CreateBBoxMask(imageWrapper.Bitmap.Width, imageWrapper.Bitmap.Height,
+                    pageContext.CurrentBBox);
+
+
+                MergeMaskImage(imageWrapper, bBoxMask);
+                pageContext.CurrentBBox = null;
+            }
+
+
+            image.Buffer = imageWrapper.Buffer;
+            images.Add(image);
         }
 
-        private bool ApplyMask(ImageRenderInfo data, ref byte[] bytes)
+        private Bitmap CreateBBoxMask(int width, int height, ClippingPath shape)
+        {
+            Bitmap result = new Bitmap(width, height);
+            var graphics = Graphics.FromImage(result);
+            graphics.FillRectangle(Brushes.Black, 0f, 0f, result.Width, result.Height);
+            GraphicsPath path = new GraphicsPath();
+            foreach (var line in shape.Lines)
+            {
+                var start = new PointF(line.Start.X, line.Start.Y);
+                var end = new PointF(line.End.X, line.End.Y);
+                if (line.CurveControlPoint1 == null)
+                {
+                    path.AddLine(start, end);
+                    continue;
+                }
+
+                var controlPoint1 = new PointF(line.CurveControlPoint1.X, line.CurveControlPoint1.Y);
+                if (line.CurveControlPoint2 == null)
+                {
+                    path.AddBeziers(new[] {start, controlPoint1, end});
+                    continue;
+                }
+
+                var controlPoint2 = new PointF(line.CurveControlPoint2.X, line.CurveControlPoint2.Y);
+                path.AddBezier(start, controlPoint1, controlPoint2, end);
+            }
+
+            path.FillMode = shape.EvenOddRule ? FillMode.Alternate : FillMode.Winding;
+            path.CloseFigure();
+            graphics.FillPath(Brushes.White, path);
+            return result;
+        }
+
+        private bool ApplyMask(ImageRenderInfo data, ImageWrapper imageWrapper)
         {
             var image = data.GetImage();
             var dict = image.GetPdfObject();
@@ -76,12 +124,12 @@ namespace PdfRepresantation
             {
                 case null: return false;
                 case PdfStream maskStream:
-                    MergeMaskObject(ref bytes, maskStream);
+                    MergeMaskObject(imageWrapper, maskStream);
                     return true;
                 case PdfArray array:
                     var spaceName = dict.GetAsName(PdfName.ColorSpace) ??
                                     dict.GetAsArray(PdfName.ColorSpace).GetAsName(0);
-                    MergeMaskArray(ref bytes, array, spaceName);
+                    MergeMaskArray(imageWrapper, array, spaceName);
                     return true;
             }
 
@@ -89,12 +137,11 @@ namespace PdfRepresantation
             return false;
         }
 
-        private void MergeMaskArray(ref byte[] bytes, PdfArray array, PdfName spaceName)
+        private void MergeMaskArray(ImageWrapper imageWrapper, PdfArray array, PdfName spaceName)
         {
             var colors = array.ToIntArray();
-            var colorManager = (NormalColorManager)ColorManager.GetManagerByName(spaceName);
-            var bitmapImage = Bitmap.FromStream(new MemoryStream(bytes)) as Bitmap;
-            MakeTransparentPossible(ref bitmapImage);
+            var colorManager = (NormalColorManager) ColorManager.GetManagerByName(spaceName);
+            MakeTransparentPossible(imageWrapper);
 
             var firstHalf = new int[colors.Length / 2];
             var secondHalf = new int[colors.Length / 2];
@@ -106,63 +153,49 @@ namespace PdfRepresantation
                     secondHalf[i / 2] = colors[i];
             }
 
-            var start = colorManager.Color(firstHalf,1);
+            var start = colorManager.Color(firstHalf, 1);
             if (start == null)
                 return;
-            var end = colorManager.Color(secondHalf,1);
+            var end = colorManager.Color(secondHalf, 1);
             if (end == null)
                 return;
 
-            var output = ApplyRangeTransparent(bitmapImage, start.Value, end.Value);
-            using (var memoryStream = new MemoryStream())
-            {
-                output.Save(memoryStream, bitmapImage.RawFormat);
-                bytes = memoryStream.GetBuffer();
-            }
+            imageWrapper.Bitmap = ApplyRangeTransparent(imageWrapper.Bitmap, start.Value, end.Value);
         }
 
-        private static void MakeTransparentPossible(ref Bitmap bitmapImage)
+        private static void MakeTransparentPossible(ImageWrapper imageWrapper)
         {
-            if (!Equals(bitmapImage.RawFormat, ImageFormat.Bmp) &&
-                !Equals(bitmapImage.RawFormat, ImageFormat.MemoryBmp) &&
-                !Equals(bitmapImage.RawFormat, ImageFormat.Jpeg))
+            if (!Equals(imageWrapper.Format, ImageFormat.Bmp) &&
+                !Equals(imageWrapper.Format, ImageFormat.MemoryBmp) &&
+                !Equals(imageWrapper.Format, ImageFormat.Jpeg))
                 return;
-            byte[] bytes;
-            using (var memoryStream = new MemoryStream())
-            {
-                bitmapImage.Save(memoryStream, ImageFormat.Png);
-                bytes = memoryStream.GetBuffer();
-            }
-
-            bitmapImage = Bitmap.FromStream(new MemoryStream(bytes)) as Bitmap;
+            imageWrapper.Format = ImageFormat.Png;
         }
 
-        private bool MergeSoftMask(ImageRenderInfo data, ref byte[] bytes)
+        private bool MergeSoftMask(ImageRenderInfo data, ImageWrapper imageWrapper)
         {
             var image = data.GetImage();
             var maskStream = image.GetPdfObject().GetAsStream(PdfName.SMask);
             if (maskStream == null)
                 return false;
-            MergeMaskObject(ref bytes, maskStream);
+            MergeMaskObject(imageWrapper, maskStream);
 
             return true;
         }
 
-        private void MergeMaskObject(ref byte[] bytes, PdfStream maskStream)
+        private void MergeMaskObject(ImageWrapper imageWrapper, PdfStream maskStream)
         {
-            var bitmapImage = Bitmap.FromStream(new MemoryStream(bytes)) as Bitmap;
-
             var maskImage = new PdfImageXObject(maskStream);
             var bytesMask = maskImage.GetImageBytes();
             var bitmapMask = Bitmap.FromStream(new MemoryStream(bytesMask)) as Bitmap;
 
-            var bitmapResult = ApplyMask(bitmapImage, bitmapMask);
+            MergeMaskImage(imageWrapper, bitmapMask);
+        }
 
-            using (var memoryStream = new MemoryStream())
-            {
-                bitmapResult.Save(memoryStream, bitmapImage.RawFormat);
-                bytes = memoryStream.GetBuffer();
-            }
+        private void MergeMaskImage(ImageWrapper imageWrapper, Bitmap bitmapMask)
+        {
+            MakeTransparentPossible(imageWrapper);
+            imageWrapper.Bitmap = ApplyMask(imageWrapper.Bitmap, bitmapMask);
         }
 
         private Bitmap ApplyRangeTransparent(Bitmap input, Color start, Color end)
@@ -211,7 +244,6 @@ namespace PdfRepresantation
             Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
             output.MakeTransparent();
             var rect = new Rectangle(0, 0, input.Width, input.Height);
-
             var bitsMask = mask.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);

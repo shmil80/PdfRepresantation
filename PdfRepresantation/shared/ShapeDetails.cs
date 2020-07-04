@@ -14,19 +14,23 @@ namespace PdfRepresantation
         Both = 3
     }
 
-    public class ShapeDetails:IPdfDrawingOrdered
+    public class BaseShapeDetails
     {
-        public int Order { get; set; }
         public ShapeOperation ShapeOperation { get; set; }
-        public ColorDetails StrokeColor { get; set; }
-        public ColorDetails FillColor { get; set; }
-        public IList<ShapeLine> Lines = new List<ShapeLine>();
         public float LineWidth { get; set; }
         public bool EvenOddRule { get; set; }
-       public float MinX => Lines.Min(l => l.AllPoints.Min(p => p.X));
-       public float MinY => Lines.Min(l => l.AllPoints.Min(p => p.Y));
-       public float MaxX => Lines.Max(l => l.AllPoints.Max(p => p.X));
-       public float MaxY => Lines.Max(l => l.AllPoints.Max(p => p.Y));
+        public IList<ShapeLine> Lines = new List<ShapeLine>();
+        public float MinX => Lines.Min(l => l.AllPoints.Min(p => p.X));
+        public float MinY => Lines.Min(l => l.AllPoints.Min(p => p.Y));
+        public float MaxX => Lines.Max(l => l.AllPoints.Max(p => p.X));
+        public float MaxY => Lines.Max(l => l.AllPoints.Max(p => p.Y));
+    }
+
+    public class ShapeDetails : BaseShapeDetails, IPdfDrawingOrdered
+    {
+        public int Order { get; set; }
+        public ColorDetails StrokeColor { get; set; }
+        public ColorDetails FillColor { get; set; }
 
         public override string ToString()
         {
@@ -59,7 +63,7 @@ namespace PdfRepresantation
 
         string StringifyColor(ColorDetails c)
         {
-            if(!(c is SimpleColorDetails simpleColor))
+            if (!(c is SimpleColorDetails simpleColor))
                 return "-";
             var color = simpleColor.Color;
             if (color.A == 0)
@@ -95,5 +99,13 @@ namespace PdfRepresantation
                 return $"gray ({color.R})";
             return $"#{color.R:X2}{color.G:X2}{color.B:X2}{(color.A == 255 ? "" : color.A.ToString("X2"))}";
         }
+    }
+
+    public class ClippingPath : BaseShapeDetails
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float ScaleWidth { get; set; }
+        public float ScaleHeight { get; set; }
     }
 }

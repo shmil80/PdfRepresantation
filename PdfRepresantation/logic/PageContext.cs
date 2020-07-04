@@ -11,5 +11,6 @@ namespace PdfRepresantation
         public int PageNumber { get; set; }
 
         public LinkManager LinkManager { get; set; }
+        public ClippingPath CurrentBBox;
     }
 }
