@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using iText.Kernel.Pdf;
 
@@ -70,5 +71,6 @@ namespace PdfRepresantation
 
 
         public override int Type => 0;
+        public override IEnumerable<float> PointsControl => new[] {0F, 1F};
     }
 }

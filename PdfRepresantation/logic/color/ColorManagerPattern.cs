@@ -61,7 +61,7 @@ namespace PdfRepresantation
             {
                 case PdfDictionary dictFunc:
                     var function = Function.Create(dictFunc);
-                    pointBreaks = CreatePointBreaks(function);
+                    pointBreaks = function.PointsControl.ToArray();
                     for (var index = 0; index < pointBreaks.Count; index++)
                     {
                         var offset = pointBreaks[index];
@@ -82,7 +82,7 @@ namespace PdfRepresantation
                     var functions = arrayFunc
                         .Select(d => Function.Create((PdfDictionary) d))
                         .ToArray();
-                    pointBreaks = CreatePointBreaks(functions[0]);
+                    pointBreaks = functions[0].PointsControl.ToArray();
                     for (var index = 0; index < pointBreaks.Count; index++)
                     {
                         var offset = pointBreaks[index];
@@ -105,32 +105,6 @@ namespace PdfRepresantation
 
             return result;
         }
-
-        private static IList<float> CreatePointBreaks(Function function)
-        {
-            switch (function)
-            {
-                case ExpFunction _:
-                case PostScriptFunction _:
-                    return Enumerable.Range(0, 11)
-                        .Select(i => i / 10F)
-                        .ToArray();
-                case SampledFunction _:
-                    return new[] {0F, 1F};
-                case StitchFunction stitch:
-                    float[] result=new float[stitch.bounds.Length+1];
-                    for (var i = 0; i < stitch.bounds.Length; i++)
-                    {
-                        result[i] = stitch.bounds[i].Min;
-                    }
-
-                    result[stitch.bounds.Length] = stitch.bounds.Last().Max;
-                    return result;
-                default:
-                    throw new IndexOutOfRangeException();
-            }
-        }
-
 
         public static void CalculteRelativePosition(GardientColorDetails gradient,
             float minX, float minY, float maxX, float maxY)

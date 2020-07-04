@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using iText.Kernel.Pdf;
 
@@ -6,8 +7,8 @@ namespace PdfRepresantation
 {
     public class StitchFunction : Function
     {
-        public readonly Function[] functions;
-        public readonly Range[] bounds;
+        private readonly Function[] functions;
+        private readonly Range[] bounds;
         private readonly Range[] encodes;
 
         public StitchFunction(PdfDictionary dict) : base(dict)
@@ -30,6 +31,30 @@ namespace PdfRepresantation
             bounds[bounds.Length - 1] = new Range {Min = last, Max = domain.Max};
             var encode = dict.GetAsArray(PdfName.Encode).ToFloatArray();
             encodes = Range.CreateArray(encode);
+        }
+
+        public override IEnumerable<float> PointsControl
+        {
+            get
+            {
+                if(bounds.Length==0)
+                    yield break;
+                var current = bounds[0].Min;
+                for (var index = 0; index < bounds.Length; index++)
+                {
+                    var bound = bounds[index];
+                    var function = functions[index];
+                    var start = bound.Min;
+                    var length = bound.Length;
+                    foreach (var point in function.PointsControl.Skip(1))
+                    {
+                        yield return current;
+                        current = start + point * length;
+                    }
+                }
+
+                yield return bounds.Last().Max;
+            }
         }
 
         protected override float[] CalculateImplemantaion(float[] inputs)

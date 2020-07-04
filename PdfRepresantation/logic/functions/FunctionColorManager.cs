@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using iText.Kernel.Pdf;
 
@@ -21,6 +22,10 @@ namespace PdfRepresantation
 
         public readonly Range[] InputsRange;
         public readonly Range[] OutputsRange;
+        /// <summary>
+        /// points that probably will be the place when the result of rhe function stop to change lineralychanges of 
+        /// </summary>
+        public abstract IEnumerable<float> PointsControl { get; }
 
         public float[] Calculate(float[] inputs)
         {

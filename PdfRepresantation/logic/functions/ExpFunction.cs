@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using iText.Kernel.Pdf;
 
 namespace PdfRepresantation
@@ -28,5 +30,9 @@ namespace PdfRepresantation
         }
 
         public override int Type => 2;
+        public override IEnumerable<float> PointsControl =>
+            n==1?new []{0F,1F}:
+            Enumerable.Range(0, 11)
+            .Select(i => i / 10F);
     }
 }

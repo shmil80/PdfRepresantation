@@ -28,6 +28,9 @@ namespace PdfRepresantation
         }
 
         public override int Type => 4;
+        public override IEnumerable<float> PointsControl => Enumerable.Range(0, 11)
+            .Select(i => i / 10F);
+
     }
 
     
