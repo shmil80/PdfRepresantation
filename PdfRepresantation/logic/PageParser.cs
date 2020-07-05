@@ -13,27 +13,29 @@ namespace PdfRepresantation
     {
         protected readonly ImageParser imageParser;
         protected readonly ShapeParser shapeParser;
+        protected readonly ClipParser clipParser;
         protected readonly TextParser textParser;
         private readonly LinesGenerator linesGenerator;
 
         private readonly PageContext pageContext;
         private int orderIndex = 0;
+
         public PageParser(PdfPage page, int pageNumber)
         {
             var pageSize = page.GetPageSize();
-            pageContext=new PageContext
+            pageContext = new PageContext
             {
                 Page = page,
                 PageNumber = pageNumber,
-                PageHeight =pageSize.GetHeight(),
+                PageHeight = pageSize.GetHeight(),
                 PageWidth = pageSize.GetWidth()
             };
             pageContext.LinkManager = new LinkManager(pageContext);
-            linesGenerator =  new LinesGenerator(pageContext);
+            linesGenerator = new LinesGenerator(pageContext);
             imageParser = new ImageParser(pageContext);
             shapeParser = new ShapeParser(pageContext);
             textParser = new TextParser(pageContext);
-            
+            clipParser=new ClipParser(pageContext);
             pageContext.LinkManager.FindLinks();
         }
 
@@ -42,16 +44,22 @@ namespace PdfRepresantation
             switch (type)
             {
                 case EventType.BEGIN_TEXT:
-                case EventType.END_TEXT:
-                case EventType.CLIP_PATH_CHANGED: break;
+                case EventType.END_TEXT: break;
+                case EventType.CLIP_PATH_CHANGED:
+                    break;
                 case EventType.RENDER_PATH:
-                    shapeParser.ParsePath((PathRenderInfo) data,orderIndex++);
+
+                    var pathInfo = (PathRenderInfo) data;
+                    if(pathInfo.GetOperation()==PathRenderInfo.NO_OP)
+                        clipParser.ParseClip(pathInfo);
+                    else 
+                        shapeParser.ParsePath(pathInfo, orderIndex++);
                     break;
                 case EventType.RENDER_TEXT:
                     textParser.ParseText((TextRenderInfo) data);
                     break;
                 case EventType.RENDER_IMAGE:
-                    imageParser.ParseImage((ImageRenderInfo) data,orderIndex++);
+                    imageParser.ParseImage((ImageRenderInfo) data, orderIndex++);
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -60,7 +68,11 @@ namespace PdfRepresantation
 
         public ICollection<EventType> GetSupportedEvents()
         {
-            return new[] {EventType.RENDER_TEXT, EventType.RENDER_IMAGE, EventType.RENDER_PATH};
+            return new[]
+            {
+                EventType.RENDER_TEXT, EventType.RENDER_IMAGE,
+                EventType.RENDER_PATH, EventType.CLIP_PATH_CHANGED
+            };
         }
 
         public virtual PdfPageDetails CreatePageDetails()

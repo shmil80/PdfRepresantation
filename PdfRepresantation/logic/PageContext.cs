@@ -2,15 +2,15 @@
 
 namespace PdfRepresantation
 {
-    class PageContext
+ public   class PageContext
     {
-        public bool PageRTL { get; set; }
-        public float PageHeight { get; set; }
-        public float PageWidth { get; set; }
-        public PdfPage Page { get; set; }
-        public int PageNumber { get; set; }
+        internal bool PageRTL { get; set; }
+        internal float PageHeight { get; set; }
+        internal float PageWidth { get; set; }
+        internal PdfPage Page { get; set; }
+        internal int PageNumber { get; set; }
 
-        public LinkManager LinkManager { get; set; }
-        public ClippingPath CurrentBBox;
+        internal LinkManager LinkManager { get; set; }
+        internal ClippingPath CurrentBBox;
     }
 }

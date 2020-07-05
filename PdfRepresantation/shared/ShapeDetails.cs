@@ -16,8 +16,6 @@ namespace PdfRepresantation
 
     public class BaseShapeDetails
     {
-        public ShapeOperation ShapeOperation { get; set; }
-        public float LineWidth { get; set; }
         public bool EvenOddRule { get; set; }
         public IList<ShapeLine> Lines = new List<ShapeLine>();
         public float MinX => Lines.Min(l => l.AllPoints.Min(p => p.X));
@@ -28,6 +26,8 @@ namespace PdfRepresantation
 
     public class ShapeDetails : BaseShapeDetails, IPdfDrawingOrdered
     {
+        public ShapeOperation ShapeOperation { get; set; }
+        public float LineWidth { get; set; }
         public int Order { get; set; }
         public ColorDetails StrokeColor { get; set; }
         public ColorDetails FillColor { get; set; }

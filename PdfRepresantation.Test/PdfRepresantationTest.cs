@@ -35,7 +35,7 @@ namespace PdfRepresantation.Test
                 if(file.Extension!=".pdf")
                     continue;
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-//                if(name!="rotate")
+//                if(name!="addingImage")
 //                    continue;
                 if(name!="pdf-020")
                     continue;

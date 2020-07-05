@@ -88,24 +88,25 @@ namespace PdfRepresantation
             var graphics = Graphics.FromImage(result);
             graphics.FillRectangle(Brushes.Black, 0f, 0f, result.Width, result.Height);
             GraphicsPath path = new GraphicsPath();
+            var deltaX = -0;
             foreach (var line in shape.Lines)
             {
-                var start = new PointF(line.Start.X, line.Start.Y);
-                var end = new PointF(line.End.X, line.End.Y);
+                var start = new PointF(deltaX+line.Start.X, height-line.Start.Y);
+                var end = new PointF(deltaX+line.End.X, height-line.End.Y);
                 if (line.CurveControlPoint1 == null)
                 {
                     path.AddLine(start, end);
                     continue;
                 }
 
-                var controlPoint1 = new PointF(line.CurveControlPoint1.X, line.CurveControlPoint1.Y);
+                var controlPoint1 = new PointF(deltaX+line.CurveControlPoint1.X, height-line.CurveControlPoint1.Y);
                 if (line.CurveControlPoint2 == null)
                 {
                     path.AddBeziers(new[] {start, controlPoint1, end});
                     continue;
                 }
 
-                var controlPoint2 = new PointF(line.CurveControlPoint2.X, line.CurveControlPoint2.Y);
+                var controlPoint2 = new PointF(deltaX+line.CurveControlPoint2.X, height-line.CurveControlPoint2.Y);
                 path.AddBezier(start, controlPoint1, controlPoint2, end);
             }
 
