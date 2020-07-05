@@ -56,7 +56,15 @@ namespace PdfRepresantation
         {
             var result = new List<ColorInGardient>();
             IList<float> pointBreaks;
-            var lastOffset = 0F;
+            void AddItem(float[] values,float offset)
+            {
+                var color = colorManager.Color(values, alpha);
+                if (color.HasValue)
+                {
+                    result.Add(new ColorInGardient(color.Value, offset));
+                }
+
+            }
             switch (pdfFunction)
             {
                 case PdfDictionary dictFunc:
@@ -65,16 +73,8 @@ namespace PdfRepresantation
                     for (var index = 0; index < pointBreaks.Count; index++)
                     {
                         var offset = pointBreaks[index];
-                        var color = colorManager.Color(function.Calculate(new[] {offset}), alpha);
-                        if (color.HasValue)
-                        {
-                            result.Add(new ColorInGardient
-                            {
-                                OffSet = offset - lastOffset,
-                                Color = color.Value
-                            });
-                            //lastOffset += offset;
-                        }
+                        var values = function.Calculate(new[] {offset});
+                        AddItem(values, offset);
                     }
 
                     break;
@@ -86,18 +86,10 @@ namespace PdfRepresantation
                     for (var index = 0; index < pointBreaks.Count; index++)
                     {
                         var offset = pointBreaks[index];
-                        var color = colorManager.Color(functions
+                        var values = functions
                             .Select(f => f.Calculate(new[] {offset})[0])
-                            .ToArray(), alpha);
-                        if (color.HasValue)
-                        {
-                            result.Add(new ColorInGardient
-                            {
-                                OffSet = offset - lastOffset,
-                                Color = color.Value
-                            });
-                            //lastOffset += offset;
-                        }
+                            .ToArray();
+                        AddItem(values, offset);
                     }
 
                     break;
@@ -109,11 +101,11 @@ namespace PdfRepresantation
         public static void CalculteRelativePosition(GardientColorDetails gradient,
             float minX, float minY, float maxX, float maxY)
         {
-            NewMethod(gradient.Start, minX, minY, maxX, maxY);
-            NewMethod(gradient.End, minX, minY, maxX, maxY);
+            CalculteRelativePosition(gradient.Start, minX, minY, maxX, maxY);
+            CalculteRelativePosition(gradient.End, minX, minY, maxX, maxY);
         }
 
-        private static void NewMethod(GardientPoint point, float minX, float minY, float maxX, float maxY)
+        private static void CalculteRelativePosition(GardientPoint point, float minX, float minY, float maxX, float maxY)
         {
             point.RelativeX = (point.AbsoluteX - minX) / (maxX - minX);
             point.RelativeY = (point.AbsoluteY - minY) / (maxY - minY);
@@ -223,7 +215,7 @@ namespace PdfRepresantation
             }
         }
 
-        private static GardientColorDetails GetColor(PdfPattern.Tiling tiling, float alpha)
+        private static GardientColorDetails GetColor(PdfPage page,PdfPattern.Tiling tiling, float alpha)
         {
             switch (tiling.GetTilingType())
             {
