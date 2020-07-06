@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PdfRepresantation
 {
-    public class PdfImageHtmlWriter
+    public abstract class PdfImageHtmlWriter
     {
         private int indexImage = 1;
         private readonly bool embeddedImages;
@@ -14,18 +14,12 @@ namespace PdfRepresantation
         {
             this.embeddedImages = embeddedImages;
             this.dirImages = dirImages;
-            if (embeddedImages&&dirImages != null && Directory.Exists(dirImages))
+            if (embeddedImages && dirImages != null && Directory.Exists(dirImages))
                 Directory.CreateDirectory(dirImages);
-
         }
 
-        public virtual void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        protected virtual void AssignPathImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
         {
-            var wisth = Math.Round(image.Width,2);
-            sb.Append(@"
-        <img class=""image"" height=""").Append(Math.Round(image.Height,2))
-                .Append("\" width=\"")
-                .Append(Math.Round(image.Width,2)).Append("\" src=\"");
             if (embeddedImages || dirImages == null)
             {
                 sb.Append("data:image/png;base64, ")
@@ -33,29 +27,92 @@ namespace PdfRepresantation
             }
             else
             {
-                string path;
-                lock (this)
-                {
-                    FileInfo file;
-                    do file = new FileInfo(Path.Combine(dirImages, "image" + indexImage++ + ".png"));
-                    while (file.Exists);
-                    path = file.FullName;
-                    File.WriteAllBytes(path, image.Buffer);
-                }
-
+                var file = new FileInfo(Path.Combine(dirImages, $"image-{page.PageNumber}-{indexImage++}.png"));
+                var path = file.FullName;
+                File.WriteAllBytes(path, image.Buffer);
                 sb.Append(path);
             }
-            sb.Append("\" style=\"right:").Append(Math.Round( image.Right ,2))
-                .Append( "px;left:").Append(Math.Round(image.Left,2))
-                .Append("px; top:").Append(Math.Round(image.Top,2))
+        }
+
+        public abstract void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb);
+
+        public virtual void AddStyle(StringBuilder sb)
+        {
+        }
+    }
+
+   
+    public class PdfImageHtmlTagWriter : PdfImageHtmlWriter
+    {
+        public PdfImageHtmlTagWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
+        {
+        }
+
+
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        {
+            sb.Append(@"
+        <img class=""image"" height=""").Append(Math.Round(image.Height, 2))
+                .Append("\" width=\"")
+                .Append(Math.Round(image.Width, 2)).Append("\" src=\"");
+            AssignPathImage(page, image, sb);
+
+            sb.Append("\" style=\"right:").Append(Math.Round(image.Right, 2))
+                .Append("px;left:").Append(Math.Round(image.Left, 2))
+                .Append("px; top:").Append(Math.Round(image.Top, 2))
                 .Append("px\">");
             ;
         }
 
-        public virtual void AddStyle(StringBuilder sb)
+        public override void AddStyle(StringBuilder sb)
         {
-                sb.Append(@"
+            sb.Append(@"
         .image{position:absolute;}");
+        }
+    }
+    public class PdfImageHtmlCanvasWriter : PdfImageHtmlWriter
+    {
+        public PdfImageHtmlCanvasWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
+        {
+        }
+
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        {
+            sb.Append(@"
+    </script>
+        <img style=""display:none"" id=""image-").Append(image.Order)
+                .Append("\" height=\"").Append(image.Height)
+                .Append("\" width=\"")
+                .Append(Math.Round(image.Width,2)).Append("\" src=\"");
+            AssignPathImage(page,image,sb);
+
+            sb.Append(@"""/>
+    <script>");
+            sb.Append(@"
+        drawImage('image-").Append(image.Order).Append("',")
+                .Append(Math.Round(image.Left,2)).Append(",").Append(Math.Round(image.Top,2))
+                .Append(",").Append(Math.Round(image.Width,2)).Append(",").Append(Math.Round(image.Height,2)).Append(");");
+
+        }
+    }
+
+    public class PdfImageHtmlSvgWriter : PdfImageHtmlWriter
+    {
+        public PdfImageHtmlSvgWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
+        {
+        }
+
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        {
+            sb.Append(@"
+        <image height=""").Append(Math.Round(image.Height, 2))
+                .Append("\" width=\"")
+                .Append(Math.Round(image.Width, 2)).Append("\" href=\"");
+            AssignPathImage(page,image, sb);
+            sb.Append("\" x=\"").Append(Math.Round(image.Left, 2))
+                .Append("\" y=\"").Append(Math.Round(image.Top, 2)).Append("\"/>");
+            ;
+         
         }
     }
 }

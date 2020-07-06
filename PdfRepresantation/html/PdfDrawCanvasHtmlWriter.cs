@@ -14,8 +14,8 @@ namespace PdfRepresantation
 
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
-            var width = Math.Round(page.Width,2);
-            var height = Math.Round(page.Height,2);
+            var width = Math.Round(page.Width, 2);
+            var height = Math.Round(page.Height, 2);
             sb.Append(@"
     <canvas class=""canvas"" id=""canvas-").Append(page.PageNumber)
                 .Append("\" style=\"width: ")
@@ -28,15 +28,17 @@ namespace PdfRepresantation
             sb.Append(@"
     <script>
         currentCanvas= document.getElementById('canvas-").Append(page.PageNumber).Append(@"');");
-           AddShapesAndImages(page,sb);
+            AddShapesAndImages(page, sb);
 
             sb.Append(@"
     </script>");
         }
 
+        protected override PdfImageHtmlWriter CreateImageWriter(bool embeddedImages, string dirImages)
+            => new PdfImageHtmlCanvasWriter(embeddedImages, dirImages);
+
         protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
         {
-            
         }
 
         protected override void AddShape(ShapeDetails shape, StringBuilder sb,
@@ -70,24 +72,6 @@ namespace PdfRepresantation
                 .Append(");");
         }
 
-        protected override void AddImage(PdfImageDetails image, StringBuilder sb)
-        {
-            sb.Append(@"
-    </script>
-        <img style=""display:none"" id=""image-").Append(image.Order)
-                .Append("\" height=\"").Append(image.Height)
-                .Append("\" width=\"")
-                .Append(Math.Round(image.Width,2)).Append("\" src=\"");
-            AssignPathImage(image,sb);
-
-            sb.Append(@"""/>
-    <script>");
-            sb.Append(@"
-        drawImage('image-").Append(image.Order).Append("',")
-                .Append(Math.Round(image.Left,2)).Append(",").Append(Math.Round(image.Top,2))
-                .Append(",").Append(Math.Round(image.Width,2)).Append(",").Append(Math.Round(image.Height,2)).Append(");");
-        }
-
         public override void AddScript(StringBuilder sb)
         {
             sb.Append(@"
@@ -101,7 +85,17 @@ namespace PdfRepresantation
                 ctx.lineWidth = lineWidth;
             if (!lineCap) 
                 ctx.lineCap= lineCap;
-            ctx.fillStyle=fillColor||'white';               
+            if (!fillColor) 
+                ctx.fillStyle = 'white';
+            else if (fillColor.constructor !== Array) 
+                ctx.fillStyle = fillColor;
+            else {
+                var grd = ctx.createLinearGradient(fillColor[0], fillColor[1], fillColor[2], fillColor[3]);
+                for (var i = 4; i < fillColor.length; i += 2) {
+                    grd.addColorStop(fillColor[i], fillColor[i + 1]);
+                }
+                ctx.fillStyle = grd;
+            }
             ctx.strokeStyle=strokeColor||'black';
             ctx.beginPath();
             var position={x:'-',y:'-'};
@@ -138,14 +132,31 @@ namespace PdfRepresantation
 
         protected void AppendColor(ColorDetails color, StringBuilder sb)
         {
-            if (color is SimpleColorDetails simpleColor)
+            switch (color)
             {
-                sb.Append("'");
-                PdfHtmlWriter.AppendColor(simpleColor.Color, sb);
-                sb.Append("'");
+                case GardientColorDetails gardientColor:
+                    sb.Append('[').Append(gardientColor.Start.AbsoluteX)
+                        .Append(',').Append(gardientColor.Start.AbsoluteY)
+                        .Append(',').Append(gardientColor.End.AbsoluteX)
+                        .Append(',').Append(gardientColor.End.AbsoluteY);
+                    foreach (var c in gardientColor.Colors)
+                    {
+                        sb.Append(',').Append(c.OffSet).Append(",'");
+                        PdfHtmlWriter.AppendColor(c.Color, sb);
+                        sb.Append("'");
+
+                    }
+                    sb.Append(']');
+                        
+                    break;
+                case SimpleColorDetails simpleColor:
+                    sb.Append("'");
+                    PdfHtmlWriter.AppendColor(simpleColor.Color, sb);
+                    sb.Append("'");
+                    break;
+                default: sb.Append("null");
+                    break;
             }
-            else
-                sb.Append("null");
         }
     }
 }

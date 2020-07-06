@@ -9,16 +9,14 @@ namespace PdfRepresantation
 {
     public abstract class PdfDrawHtmlWriter
     {
-        private bool embeddedImages;
-        private string dirImages;
+        protected readonly PdfImageHtmlWriter imageWriter;
 
         protected PdfDrawHtmlWriter(bool embeddedImages, string dirImages)
         {
-            this.embeddedImages = embeddedImages;
-            this.dirImages = dirImages;
-            if (embeddedImages && dirImages != null && Directory.Exists(dirImages))
-                Directory.CreateDirectory(dirImages);
+            this.imageWriter = CreateImageWriter(embeddedImages, dirImages);
         }
+
+        protected abstract PdfImageHtmlWriter CreateImageWriter(bool embeddedImages, string dirImages);
 
         protected virtual void AddShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
@@ -41,7 +39,7 @@ namespace PdfRepresantation
                 switch (item)
                 {
                     case PdfImageDetails image:
-                        AddImage(image, sb);
+                        imageWriter.AddImage(page, image, sb);
                         break;
                     case ShapeDetails shape:
                         AddShape(shape, sb, gradients);
@@ -55,31 +53,6 @@ namespace PdfRepresantation
         protected abstract void AddShape(ShapeDetails shape, StringBuilder sb,
             Dictionary<GardientColorDetails, int> gradients);
 
-        protected abstract void AddImage(PdfImageDetails image, StringBuilder sb);
-
-        protected void AssignPathImage(PdfImageDetails image, StringBuilder sb)
-        {
-            if (embeddedImages || dirImages == null)
-            {
-                sb.Append("data:image/png;base64, ")
-                    .Append(Convert.ToBase64String(image.Buffer));
-            }
-            else
-            {
-                string path;
-                lock (this)
-                {
-                    FileInfo file;
-                    int index = image.Order;
-                    do file = new FileInfo(Path.Combine(dirImages, "image" + index++ + ".png"));
-                    while (file.Exists);
-                    path = file.FullName;
-                    File.WriteAllBytes(path, image.Buffer);
-                }
-
-                sb.Append(path);
-            }
-        }
 
         public abstract void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb);
 

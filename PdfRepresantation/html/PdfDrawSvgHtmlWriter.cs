@@ -12,6 +12,8 @@ namespace PdfRepresantation
         public PdfDrawSvgHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
         {
         }
+        protected override PdfImageHtmlWriter CreateImageWriter(bool embeddedImages,string dirImages)
+            => new PdfImageHtmlCanvasWriter(embeddedImages, dirImages);
 
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
@@ -23,19 +25,6 @@ namespace PdfRepresantation
 
             sb.Append(@"
     </svg>");
-        }
-
-
-        protected override void AddImage(PdfImageDetails image, StringBuilder sb)
-        {
-            sb.Append(@"
-        <image height=""").Append(Math.Round(image.Height, 2))
-                .Append("\" width=\"")
-                .Append(Math.Round(image.Width, 2)).Append("\" href=\"");
-            this.AssignPathImage(image, sb);
-            sb.Append("\" x=\"").Append(Math.Round(image.Left, 2))
-                .Append("\" y=\"").Append(Math.Round(image.Top, 2)).Append("\"/>");
-            ;
         }
 
         private void AddPoint(ShapePoint p, StringBuilder sb)

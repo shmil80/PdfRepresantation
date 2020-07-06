@@ -29,7 +29,7 @@ namespace PdfRepresantation
             => new PdfTextHtmlWriter();
 
         protected virtual PdfImageHtmlWriter CreateImageWriter(HtmlWriterConfig config)
-            => new PdfImageHtmlWriter(config.EmbeddedImages, config.DirImages);
+            => new PdfImageHtmlTagWriter(config.EmbeddedImages, config.DirImages);
 
         protected virtual PdfDrawHtmlWriter CreateShapeWriter(HtmlWriterConfig config)
         {
