@@ -27,6 +27,7 @@ namespace PdfRepresantation
     </svg>");
         }
 
+
         private void AddPoint(ShapePoint p, StringBuilder sb)
         {
             sb.Append(" ").Append(Math.Round(p.X, 2)).Append(" ").Append(Math.Round(p.Y, 2));

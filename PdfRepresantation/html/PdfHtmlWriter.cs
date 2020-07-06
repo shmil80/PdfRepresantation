@@ -101,6 +101,7 @@ namespace PdfRepresantation
             sb.Append($@"<html>
 <head>
     <meta http-equiv=""Content-Type"" content=""text/html; charset=UTF-8"">
+    <meta name=""author"" content=""PdfRepresantation"" />
     <title>").Append(title).Append(@"</title>");
             AddStyle(fontRef, allLines, sb);
             drawWriter.AddScript(sb);

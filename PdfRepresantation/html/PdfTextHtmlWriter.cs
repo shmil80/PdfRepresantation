@@ -77,6 +77,7 @@ namespace PdfRepresantation
                 .Append("px;left:").Append(Math.Round( line.Left,2))
                 .Append("px;top:").Append(Math.Round(line.Top,2))
                 .Append("px;width:").Append(Math.Round(line.Width,2))
+                .Append("px;height:").Append(Math.Round(line.Height,2))
                 .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom,2))
                 .Append("px\" >");
             PdfLinkResult link = null;
