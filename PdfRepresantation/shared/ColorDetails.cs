@@ -31,8 +31,14 @@ namespace PdfRepresantation
     }
     public class ColorInGardient
     {
-        public Color Color { get; set; }
-        public float? OffSet { get; set; }
+        public readonly Color Color;
+        public readonly float? OffSet;
+
+        public ColorInGardient(Color color, float? offSet)
+        {
+            Color = color;
+            OffSet = offSet;
+        }
     }
     public class GardientPoint
     {
