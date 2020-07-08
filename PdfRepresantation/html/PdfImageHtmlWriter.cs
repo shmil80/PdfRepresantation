@@ -105,7 +105,7 @@ namespace PdfRepresantation
         public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
         {
             sb.Append(@"
-        <image height=""").Append(Math.Round(image.Height, 2))
+        <image preserveAspectRatio=""none"" height=""").Append(Math.Round(image.Height, 2))
                 .Append("\" width=\"")
                 .Append(Math.Round(image.Width, 2)).Append("\" href=\"");
             AssignPathImage(page,image, sb);
