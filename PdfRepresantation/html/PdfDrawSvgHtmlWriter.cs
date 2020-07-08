@@ -13,7 +13,7 @@ namespace PdfRepresantation
         {
         }
         protected override PdfImageHtmlWriter CreateImageWriter(bool embeddedImages,string dirImages)
-            => new PdfImageHtmlCanvasWriter(embeddedImages, dirImages);
+            => new PdfImageHtmlSvgWriter(embeddedImages, dirImages);
 
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
