@@ -13,6 +13,8 @@ top:0px;border-bottom:solid 1px; padding-bottom: 10px; background-color: white">
     <span id="url"></span>
     <input value="" id="text" onblur="moveBy(+(this.value)-currentIndex)"/>
     <button onclick="moveBy(-1)">קובץ שעבר</button>
+    <label for="zoom"></label>
+    <input id="zoom" onchange="changeZoom()" type="number" value="100" min="1" max="500">
 </div>
 
 <div id="frames" style="margin-top: 30px; overflow-y: hidden;overflow-x: hidden; ">

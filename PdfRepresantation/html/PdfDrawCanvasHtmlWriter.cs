@@ -8,14 +8,11 @@ namespace PdfRepresantation
 {
     public class PdfDrawCanvasHtmlWriter : PdfDrawHtmlWriter
     {
-        public PdfDrawCanvasHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
-        {
-        }
-
+ 
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
-            var width = Math.Round(page.Width, 2);
-            var height = Math.Round(page.Height, 2);
+            var width = Math.Round(page.Width, config.RoundDigits);
+            var height = Math.Round(page.Height, config.RoundDigits);
             sb.Append(@"
     <canvas class=""canvas"" id=""canvas-").Append(page.PageNumber)
                 .Append("\" style=\"width: ")
@@ -34,8 +31,8 @@ namespace PdfRepresantation
     </script>");
         }
 
-        protected override PdfImageHtmlWriter CreateImageWriter(bool embeddedImages, string dirImages)
-            => new PdfImageHtmlCanvasWriter(embeddedImages, dirImages);
+        protected override PdfImageHtmlWriter CreateImageWriter()
+            => new PdfImageHtmlCanvasWriter(config);
 
         protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
         {
@@ -157,6 +154,10 @@ namespace PdfRepresantation
                 default: sb.Append("null");
                     break;
             }
+        }
+
+        public PdfDrawCanvasHtmlWriter(HtmlWriterConfig config) : base(config)
+        {
         }
     }
 }

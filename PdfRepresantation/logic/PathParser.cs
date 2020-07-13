@@ -18,14 +18,14 @@ namespace PdfRepresantation
         
 
    
-        protected IEnumerable<ShapeLine> ConvertLines(Path path, Matrix ctm,float height)
+        protected IEnumerable<ShapeLine> ConvertLines(Path path, Matrix ctm)
         {
             return from subpath in path.GetSubpaths()
                 from line in subpath.GetSegments()
-                select ConvertLine(line, ctm,height);
+                select ConvertLine(line, ctm);
         }
 
-        protected ShapeLine ConvertLine(IShape line, Matrix ctm, float height)
+        protected ShapeLine ConvertLine(IShape line, Matrix ctm)
         {
             var points = line.GetBasePoints()
                 .Select(p => ConvertPoint(p, ctm))

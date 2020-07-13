@@ -10,6 +10,12 @@ namespace PdfRepresantation
     public class PdfTextHtmlWriter
     {
         NumberFormatInfo formatNumInClassName = new NumberFormatInfo {NumberDecimalSeparator = "-"};
+        protected readonly HtmlWriterConfig config;
+
+        public PdfTextHtmlWriter(HtmlWriterConfig config)
+        {
+            this.config = config;
+        }
 
         public virtual void AddFontStyle(Dictionary<PdfFontDetails, int> fontRef,
             IEnumerable<PdfTextLineDetails> allLines,
@@ -73,12 +79,12 @@ namespace PdfRepresantation
         <div class=""line"" style=""");
             if (line.Rotation.HasValue)
                 sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");
-            sb.Append("right:").Append(Math.Round(line.Right,2))
-                .Append("px;left:").Append(Math.Round( line.Left,2))
-                .Append("px;top:").Append(Math.Round(line.Top,2))
-                .Append("px;width:").Append(Math.Round(line.Width,2))
-                .Append("px;height:").Append(Math.Round(line.Height,2))
-                .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom,2))
+            sb.Append("right:").Append(Math.Round(line.Right,config.RoundDigits))
+                .Append("px;left:").Append(Math.Round( line.Left,config.RoundDigits))
+                .Append("px;top:").Append(Math.Round(line.Top,config.RoundDigits))
+                .Append("px;width:").Append(Math.Round(line.Width,config.RoundDigits))
+                .Append("px;height:").Append(Math.Round(line.Height,config.RoundDigits))
+                .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom,config.RoundDigits))
                 .Append("px\" >");
             PdfLinkResult link = null;
             foreach (var text in line.Texts)

@@ -9,17 +9,18 @@ namespace PdfRepresantation
 {
     public class PdfDrawSvgHtmlWriter : PdfDrawHtmlWriter
     {
-        public PdfDrawSvgHtmlWriter(bool embeddedImages, string dirImages) : base(embeddedImages, dirImages)
+        public PdfDrawSvgHtmlWriter(HtmlWriterConfig config) : base(config)
         {
         }
-        protected override PdfImageHtmlWriter CreateImageWriter(bool embeddedImages,string dirImages)
-            => new PdfImageHtmlSvgWriter(embeddedImages, dirImages);
+
+        protected override PdfImageHtmlWriter CreateImageWriter()
+            => new PdfImageHtmlSvgWriter(config);
 
         public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
-    <svg class=""canvas"" height=""").Append(Math.Round(page.Height, 2))
-                .Append("\" width=\"").Append(Math.Round(page.Width, 2))
+    <svg class=""canvas"" height=""").Append(Math.Round(page.Height, config.RoundDigits))
+                .Append("\" width=\"").Append(Math.Round(page.Width, config.RoundDigits))
                 .Append("\">");
             AddShapesAndImages(page, sb);
 
@@ -30,7 +31,7 @@ namespace PdfRepresantation
 
         private void AddPoint(ShapePoint p, StringBuilder sb)
         {
-            sb.Append(" ").Append(Math.Round(p.X, 2)).Append(" ").Append(Math.Round(p.Y, 2));
+            sb.Append(" ").Append(Math.Round(p.X, config.RoundDigits)).Append(" ").Append(Math.Round(p.Y, config.RoundDigits));
         }
 
         protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
@@ -46,17 +47,17 @@ namespace PdfRepresantation
                 sb.Append(@"
             <linearGradient id=""gradient-").Append(i);
                 if (g.Start != null)
-                    sb.Append(@""" x1=""").Append(g.Start.RelativeX.ToString("P2"))
-                        .Append(@""" x2=""").Append(g.End.RelativeX.ToString("P2"))
-                        .Append(@""" y1=""").Append(g.Start.RelativeY.ToString("P2"))
-                        .Append(@""" y2=""").Append(g.End.RelativeY.ToString("P2"));
+                    sb.Append(@""" x1=""").Append(g.Start.RelativeX.ToString("P"+config.RoundDigits))
+                        .Append(@""" x2=""").Append(g.End.RelativeX.ToString("P"+config.RoundDigits))
+                        .Append(@""" y1=""").Append(g.Start.RelativeY.ToString("P"+config.RoundDigits))
+                        .Append(@""" y2=""").Append(g.End.RelativeY.ToString("P"+config.RoundDigits));
                 sb.Append(@""">");
                 foreach (var color in g.Colors)
                 {
                     sb.Append(@"
                 <stop ");
                     if (color.OffSet.HasValue)
-                        sb.Append(@"offset=""").Append(color.OffSet.Value.ToString("P2")).Append(@"""");
+                        sb.Append(@"offset=""").Append(color.OffSet.Value.ToString("P"+config.RoundDigits)).Append(@"""");
                     sb.Append(@" stop-color=""");
                     PdfHtmlWriter.AppendColor(color.Color, sb);
                     sb.Append(@"""/>");

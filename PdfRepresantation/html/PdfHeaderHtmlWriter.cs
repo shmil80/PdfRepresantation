@@ -5,10 +5,17 @@ namespace PdfRepresantation
 {
     public class PdfHeaderHtmlWriter
     {
+        protected readonly HtmlWriterConfig config;
+
+        public PdfHeaderHtmlWriter(HtmlWriterConfig config)
+        {
+            this.config = config;
+        }
+
         public virtual void AddHeader(PdfPageDetails page, StringBuilder sb)
         {
             sb.Append(@"
-    <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width, 2))
+    <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width, config.RoundDigits))
                 .Append("px;--text:'").Append(HeaderText(page)).Append("'\"></h2>");
         }
 

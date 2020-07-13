@@ -10,13 +10,15 @@ namespace PdfRepresantation
     public abstract class PdfDrawHtmlWriter
     {
         protected readonly PdfImageHtmlWriter imageWriter;
+        protected readonly HtmlWriterConfig config;
 
-        protected PdfDrawHtmlWriter(bool embeddedImages, string dirImages)
+        protected PdfDrawHtmlWriter(HtmlWriterConfig config)
         {
-            this.imageWriter = CreateImageWriter(embeddedImages, dirImages);
+            this.config = config;
+            this.imageWriter = CreateImageWriter();
         }
 
-        protected abstract PdfImageHtmlWriter CreateImageWriter(bool embeddedImages, string dirImages);
+        protected abstract PdfImageHtmlWriter CreateImageWriter();
 
         protected virtual void AddShapesAndImages(PdfPageDetails page, StringBuilder sb)
         {

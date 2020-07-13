@@ -22,7 +22,7 @@ namespace PdfRepresantation
             var shapeOperation = (ShapeOperation) data.GetOperation();
             if (shapeOperation == ShapeOperation.None)
                 return;
-            var lines = ConvertLines(data.GetPath(), data.GetCtm(),pageContext.PageHeight).ToArray();
+            var lines = ConvertLines(data.GetPath(), data.GetCtm()).ToArray();
             if (lines.Length == 0)
                 return;
             var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),

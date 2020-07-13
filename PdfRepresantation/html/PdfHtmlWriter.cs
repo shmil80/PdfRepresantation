@@ -14,35 +14,36 @@ namespace PdfRepresantation
         private readonly PdfHeaderHtmlWriter headerWriter;
         private readonly PdfTextHtmlWriter textWriter;
         private readonly PdfImageHtmlWriter imageWriter;
+        protected readonly HtmlWriterConfig config;
 
         public PdfHtmlWriter(HtmlWriterConfig config = null)
         {
             if (config == null)
                 config = new HtmlWriterConfig();
-
+            this.config = config;
             if (config.DrawShapes)
-                drawWriter = CreateDrawWriter(config);
+                drawWriter = CreateDrawWriter();
             if (config.AddHeader)
                 headerWriter = CreateHeaderWriter();
             textWriter = CreateTextWriter();
-            imageWriter = CreateImageWriter(config);
+            imageWriter = CreateImageWriter();
         }
 
         protected virtual PdfHeaderHtmlWriter CreateHeaderWriter()
-            => new PdfHeaderHtmlWriter();
+            => new PdfHeaderHtmlWriter(config);
 
         protected virtual PdfTextHtmlWriter CreateTextWriter()
-            => new PdfTextHtmlWriter();
+            => new PdfTextHtmlWriter(config);
 
-        protected virtual PdfImageHtmlWriter CreateImageWriter(HtmlWriterConfig config)
-            => new PdfImageHtmlTagWriter(config.EmbeddedImages, config.DirImages);
+        protected virtual PdfImageHtmlWriter CreateImageWriter()
+            => new PdfImageHtmlTagWriter(config);
 
-        protected virtual PdfDrawHtmlWriter CreateDrawWriter(HtmlWriterConfig config)
+        protected virtual PdfDrawHtmlWriter CreateDrawWriter()
         {
             if (config.UseCanvas)
-                return new PdfDrawCanvasHtmlWriter(config.EmbeddedImages, config.DirImages);
+                return new PdfDrawCanvasHtmlWriter(config);
             else
-                return new PdfDrawSvgHtmlWriter(config.EmbeddedImages, config.DirImages);
+                return new PdfDrawSvgHtmlWriter(config);
         }
 
 
@@ -137,8 +138,8 @@ namespace PdfRepresantation
         {
             headerWriter?.AddHeader(page, sb);
             var addedShapes = AddShapes(page, sb);
-            var width = Math.Round(page.Width, 2);
-            var height = Math.Round(page.Height, 2);
+            var width = Math.Round(page.Width, config.RoundDigits);
+            var height = Math.Round(page.Height, config.RoundDigits);
             sb.Append(@"
     <article class=""article"" dir=""").Append(page.RightToLeft ? "rtl" : "ltr")
                 .Append("\" style=\"width: ").Append(width)
