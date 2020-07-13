@@ -37,8 +37,8 @@ namespace PdfRepresantation.Test
                 var name = Path.GetFileNameWithoutExtension(file.Name);
 //                if(name!="addingImage")
 //                    continue;
-                if(name!="pdf-020")
-                    continue;
+//                if(name!="pdf-020")
+//                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);
