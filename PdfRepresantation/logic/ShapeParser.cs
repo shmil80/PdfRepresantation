@@ -37,7 +37,8 @@ namespace PdfRepresantation
                 shapes.Add(shape);
                 clip = shape;
             }
-            pageContext.Processor.Clip(clip);
+            if(data.IsPathModifiesClippingPath())
+                pageContext.Processor.Clip(clip);
         }
 
         private ClippingPath CreateClip(bool evenOddRule, ShapeLine[] lines)
