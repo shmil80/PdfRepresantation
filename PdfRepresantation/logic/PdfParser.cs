@@ -20,8 +20,8 @@ namespace PdfRepresantation
                 Log.Info("parsing page number "+pageNumber);
                 var page = source.GetPage(pageNumber);
                 var pageParser = CreatePageParser(page, pageNumber);
-                new PdfCanvasProcessor(pageParser,
-                    new Dictionary<string, IContentOperator>())
+                var pdfCanvasProcessor = new PdfCanvasProcessorWithClip(pageParser,pageParser.pageContext);
+                  pdfCanvasProcessor
                     .ProcessPageContent(page);                
                 details.Pages[pageNumber - 1] = pageParser.CreatePageDetails();
             }

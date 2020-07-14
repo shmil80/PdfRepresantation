@@ -9,27 +9,51 @@ using Point = iText.Kernel.Geom.Point;
 
 namespace PdfRepresantation
 {
-    public class ShapeParser : PathParser
+    public class ShapeParser 
     {
         public readonly IList<ShapeDetails> shapes = new List<ShapeDetails>();
+        protected readonly PageContext pageContext;
 
-        internal ShapeParser(PageContext pageContext) : base(pageContext)
+        internal ShapeParser(PageContext pageContext)
         {
+            this.pageContext = pageContext;
         }
 
         public virtual void ParsePath(PathRenderInfo data, int orderIndex)
         {
             var shapeOperation = (ShapeOperation) data.GetOperation();
-            if (shapeOperation == ShapeOperation.None)
-                return;
+            bool evenOddRule = data.GetRule() == PdfCanvasConstants.FillingRule.EVEN_ODD;
             var lines = ConvertLines(data.GetPath(), data.GetCtm()).ToArray();
             if (lines.Length == 0)
                 return;
+            ClippingPath clip;
+            if (shapeOperation == ShapeOperation.None)
+            {
+                clip = CreateClip(evenOddRule, lines);
+            }
+            else
+            {
+                var shape = CreateShape(data, orderIndex, evenOddRule, shapeOperation, lines);
+                shapes.Add(shape);
+                clip = shape;
+            }
+            pageContext.Processor.Clip(clip);
+        }
+
+        private ClippingPath CreateClip(bool evenOddRule, ShapeLine[] lines)
+        {
+            return new ClippingPath
+            {
+                Lines = lines,
+                EvenOddRule = evenOddRule,
+            };
+        }
+
+        private ShapeDetails CreateShape(PathRenderInfo data, int orderIndex, bool evenOddRule,
+            ShapeOperation shapeOperation, ShapeLine[] lines)
+        {
             var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),
                 data.GetGraphicsState().GetFillOpacity());
-            if (shapeOperation != ShapeOperation.Stroke && fillColor == null)
-                return;
-            bool evenOddRule = data.GetRule() == PdfCanvasConstants.FillingRule.EVEN_ODD;
             var lineWidth = data.GetLineWidth();
             var shape = new ShapeDetails
             {
@@ -52,6 +76,7 @@ namespace PdfRepresantation
             var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),
                 data.GetGraphicsState().GetStrokeOpacity());
             var lineCap = data.GetLineCapStyle();
+            var dash = data.GetLineDashPattern();
             shape.StrokeColor = strokeColor;
             shape.FillColor = fillColor;
             if (Log.DebugSupported)
@@ -59,10 +84,35 @@ namespace PdfRepresantation
                 Log.Debug($"shape: {shape}");
             }
 
-            shapes.Add(shape);
+            return shape;
+        }
+        protected IEnumerable<ShapeLine> ConvertLines(Path path, Matrix ctm)
+        {
+            return from subpath in path.GetSubpaths()
+                from line in subpath.GetSegments()
+                select ConvertLine(line, ctm);
         }
 
-        protected override ShapePoint ConvertPoint(Point p, Matrix ctm)
+        protected ShapeLine ConvertLine(IShape line, Matrix ctm)
+        {
+            var points = line.GetBasePoints()
+                .Select(p => ConvertPoint(p, ctm))
+                .ToArray();
+            var result = new ShapeLine
+            {
+                Start = points[0],
+                End = points[points.Length - 1]
+            };
+            if (points.Length > 2)
+            {
+                result.CurveControlPoint1 = points[1];
+                if (points.Length > 3)
+                    result.CurveControlPoint2 = points[2];
+            }
+
+            return result;
+        }
+        protected virtual ShapePoint ConvertPoint(Point p, Matrix ctm)
         {
             Vector vector = new Vector((float) p.x, (float) p.y, 1);
             vector = vector.Cross(ctm);

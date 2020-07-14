@@ -5,7 +5,7 @@ namespace PdfRepresantation
 {
     class RectangleRotated
     {
-        public float Left, Bottom, Width, Height, Angle,BottomInOwnPlane;
+        public float Left, Bottom, Width, Height, Angle, BottomInOwnPlane;
 
         public RectangleRotated(Vector leftBottom, Vector rightBottom,
             Vector leftTop)
@@ -64,10 +64,45 @@ namespace PdfRepresantation
             Width = (float) (cosLine / ration);
             ration = Math.Sin(radians);
             Height = (float) (heightRectLeftLine / ration);
-                
-            var startPageRadian=Math.Atan2(Left, Bottom);
+
+            var startPageRadian = Math.Atan2(Left, Bottom);
             var lineFromStartPage = Math.Sqrt(Left * Left + Bottom * Bottom);
             BottomInOwnPlane = (float) (Math.Sin(startPageRadian + radians) * lineFromStartPage);
+        }
+
+           const float Tolerance = 0.0000001F;
+        public RectangleRotated(Matrix ctm)
+        {
+            Left = ctm.Get(Matrix.I31);
+            Bottom = ctm.Get(Matrix.I32);
+            
+            var xToX = ctm.Get(Matrix.I11);
+            var yToY = ctm.Get(Matrix.I22);
+            var yToX = ctm.Get(Matrix.I21);
+            var xToY = ctm.Get(Matrix.I12);
+            if (Math.Abs(xToY) < Tolerance && Math.Abs(yToX) < Tolerance)
+            {
+                Width = Math.Abs(xToX);
+                Height = Math.Abs(yToY);
+                if (xToX < 0)
+                    Left += xToX; //reverse rtl
+               if (yToY < 0)
+                   Bottom += xToX;//reverse utb 
+                Angle =0;
+                BottomInOwnPlane = Bottom;
+            }
+            else if(Math.Abs(xToX)<1&&Math.Abs(yToY)<1)
+            {
+                //Todo rotation in image is not completed at all
+                Width = Math.Abs(yToX);
+                Height = Math.Abs(xToY);
+                if (yToX < 0)
+                    Left += yToX; 
+                if (xToY < 0)
+                    Bottom += xToY;
+                Angle = 90;
+
+            }
         }
     }
 }

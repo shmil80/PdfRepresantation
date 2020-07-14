@@ -12,7 +12,7 @@ namespace PdfRepresantation
         public PdfImageHtmlWriter(HtmlWriterConfig config)
         {
             this.config = config;
-              if (config.EmbeddedImages && config.DirImages != null && Directory.Exists(config.DirImages))
+            if (config.EmbeddedImages && config.DirImages != null && Directory.Exists(config.DirImages))
                 Directory.CreateDirectory(config.DirImages);
         }
 
@@ -39,7 +39,7 @@ namespace PdfRepresantation
         }
     }
 
-   
+
     public class PdfImageHtmlTagWriter : PdfImageHtmlWriter
     {
         public PdfImageHtmlTagWriter(HtmlWriterConfig config) : base(config)
@@ -54,7 +54,10 @@ namespace PdfRepresantation
                 .Append(Math.Round(image.Width, config.RoundDigits)).Append("\" src=\"");
             AssignPathImage(page, image, sb);
 
-            sb.Append("\" style=\"right:").Append(Math.Round(image.Right, config.RoundDigits))
+            sb.Append("\" style=\"");
+            if (image.Rotation.HasValue)
+                sb.Append("transform: rotate(").Append(Math.Round(image.Rotation.Value)).Append("deg);");
+            sb.Append("right:").Append(Math.Round(image.Right, config.RoundDigits))
                 .Append("px;left:").Append(Math.Round(image.Left, config.RoundDigits))
                 .Append("px; top:").Append(Math.Round(image.Top, config.RoundDigits))
                 .Append("px\">");
@@ -67,6 +70,7 @@ namespace PdfRepresantation
         .image{position:absolute;}");
         }
     }
+
     public class PdfImageHtmlCanvasWriter : PdfImageHtmlWriter
     {
         public PdfImageHtmlCanvasWriter(HtmlWriterConfig config) : base(config)
@@ -75,23 +79,23 @@ namespace PdfRepresantation
 
         public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
         {
-            var height = Math.Round(image.Height,config.RoundDigits);
-            var width = Math.Round(image.Width,config.RoundDigits);
+            var height = Math.Round(image.Height, config.RoundDigits);
+            var width = Math.Round(image.Width, config.RoundDigits);
             sb.Append(@"
     </script>
         <img style=""display:none"" id=""image-").Append(image.Order)
                 .Append("\" height=\"").Append(height)
                 .Append("\" width=\"").Append(width)
                 .Append("\" src=\"");
-            AssignPathImage(page,image,sb);
+            AssignPathImage(page, image, sb);
 
             sb.Append(@"""/>
     <script>");
             sb.Append(@"
         drawImage('image-").Append(image.Order).Append("',")
-                .Append(Math.Round(image.Left,config.RoundDigits)).Append(",").Append(Math.Round(image.Top,config.RoundDigits))
+                .Append(Math.Round(image.Left, config.RoundDigits)).Append(",")
+                .Append(Math.Round(image.Top, config.RoundDigits))
                 .Append(",").Append(width).Append(",").Append(height).Append(");");
-
         }
     }
 
@@ -103,15 +107,38 @@ namespace PdfRepresantation
 
         public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
         {
+            double height;
+            double width;
+            var left = Math.Round(image.Left, config.RoundDigits);
+            var top = Math.Round(image.Top, config.RoundDigits);
+            if (!image.Rotation.HasValue)
+            {
+                 width  = Math.Round(image.Width, config.RoundDigits);
+                 height = Math.Round(image.Height, config.RoundDigits);
+
+            }
+            else
+            {
+                  height= Math.Round(image.Width, config.RoundDigits);
+                width  = Math.Round(image.Height, config.RoundDigits);
+                left += height;
+
+            }
             sb.Append(@"
-        <image preserveAspectRatio=""none"" height=""").Append(Math.Round(image.Height, config.RoundDigits))
+        <image preserveAspectRatio=""none"" height=""").Append(height)
                 .Append("\" width=\"")
-                .Append(Math.Round(image.Width, config.RoundDigits)).Append("\" href=\"");
-            AssignPathImage(page,image, sb);
-            sb.Append("\" x=\"").Append(Math.Round(image.Left, config.RoundDigits))
-                .Append("\" y=\"").Append(Math.Round(image.Top, config.RoundDigits)).Append("\"/>");
+                .Append(width).Append("\" href=\"");
+            AssignPathImage(page, image, sb);
+            sb.Append("\" ");
+            if (image.Rotation.HasValue)
+            {  
+                 sb.Append("transform=\"rotate(").Append(Math.Round(image.Rotation.Value))
+                    .Append(",").Append(left)
+                    .Append(",").Append(top).Append(")\" ");
+            }
+            sb.Append("x=\"").Append(left)
+                .Append("\" y=\"").Append(top).Append("\"/>");
             ;
-         
         }
     }
 }

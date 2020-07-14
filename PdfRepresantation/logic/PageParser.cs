@@ -13,11 +13,10 @@ namespace PdfRepresantation
     {
         protected readonly ImageParser imageParser;
         protected readonly ShapeParser shapeParser;
-        protected readonly ClipParser clipParser;
         protected readonly TextParser textParser;
         private readonly LinesGenerator linesGenerator;
 
-        private readonly PageContext pageContext;
+        public readonly PageContext pageContext;
         private int orderIndex = 0;
 
         public PageParser(PdfPage page, int pageNumber)
@@ -35,7 +34,6 @@ namespace PdfRepresantation
             imageParser = new ImageParser(pageContext);
             shapeParser = new ShapeParser(pageContext);
             textParser = new TextParser(pageContext);
-            clipParser=new ClipParser(pageContext);
             pageContext.LinkManager.FindLinks();
         }
 
@@ -50,10 +48,7 @@ namespace PdfRepresantation
                 case EventType.RENDER_PATH:
 
                     var pathInfo = (PathRenderInfo) data;
-                    if(pathInfo.GetOperation()==PathRenderInfo.NO_OP)
-                        clipParser.ParseClip(pathInfo);
-                    else 
-                        shapeParser.ParsePath(pathInfo, orderIndex++);
+                    shapeParser.ParsePath(pathInfo, orderIndex++);
                     break;
                 case EventType.RENDER_TEXT:
                     textParser.ParseText((TextRenderInfo) data);

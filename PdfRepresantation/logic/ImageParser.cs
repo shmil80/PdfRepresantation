@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using iText.IO.Image;
@@ -48,33 +49,30 @@ namespace PdfRepresantation
                 //wrong format of image
                 return;
             }
-
-            // var start = data.GetStartPoint();
             var ctm = data.GetImageCtm();
-            var width = ctm.Get(Matrix.I11);
-            var height = ctm.Get(Matrix.I22);
-            var x = ctm.Get(Matrix.I31);
-            var y = pageContext.PageHeight - ctm.Get(Matrix.I32);
+            var position=new RectangleRotated(ctm);
             var image = new PdfImageDetails
             {
-                Bottom = y,
-                Top = y - height,
-                Left = x,
-                Right = pageContext.PageWidth - x - width,
-                Width = width,
-                Height = height,
+                Left = position.Left,
+                Bottom = pageContext.PageHeight - position.Bottom,
+                Width = position.Width,
+                Height = position.Height,
+                Rotation=position.Angle==0?(float?) null:position.Angle,
+                Top = pageContext.PageHeight - position.Bottom- position.Height,
+                Right = pageContext.PageWidth - position.Left - position.Width,
                 Order = orderIndex,
             };
             if (!MergeSoftMask(data, imageWrapper))
                 ApplyMask(data, imageWrapper);
-            if (pageContext.CurrentBBox != null)
+            if (pageContext.Processor.CurrentClipping != null)
             {
-                var bBoxMask = CreateBBoxMask(imageWrapper.Bitmap.Width, imageWrapper.Bitmap.Height,
-                    pageContext.CurrentBBox);
-
-
-                MergeMaskImage(imageWrapper, bBoxMask);
-                pageContext.CurrentBBox = null;
+                var clippingMask = CreateClippingMask(image.Left,image.Top,
+                    imageWrapper.Bitmap.Width/image.Width,
+                    imageWrapper.Bitmap.Height/image.Height,
+                    imageWrapper.Bitmap.Width, imageWrapper.Bitmap.Height,
+                    pageContext.Processor.CurrentClipping);
+                if(clippingMask!=null)
+                    MergeMaskImage(imageWrapper, clippingMask);
             }
 
 
@@ -82,37 +80,53 @@ namespace PdfRepresantation
             images.Add(image);
         }
 
-        private Bitmap CreateBBoxMask(int width, int height, ClippingPath shape)
+        private Bitmap CreateClippingMask(float x,float y,
+            float scaleH,float scaleV,
+            int width, int height, ClippingPath shape)
         {
+            if (shape.Lines.All(l => l.AllPoints.All(p => Math.Abs(p.X) > 100000 || Math.Abs(p.Y) > 100000)))
+                return null;
             Bitmap result = new Bitmap(width, height);
             var graphics = Graphics.FromImage(result);
-            graphics.FillRectangle(Brushes.Black, 0f, 0f, result.Width, result.Height);
+            graphics.FillRectangle(Brushes.Black, 0f, 0f, pageContext.PageWidth, pageContext.PageHeight);
             GraphicsPath path = new GraphicsPath();
-            var deltaX = -0;
+
+            PointF Point(ShapePoint p)
+            {
+                return new PointF(scaleH*(p.X-x),scaleV*(p.Y-y));
+            }
             foreach (var line in shape.Lines)
             {
-                var start = new PointF(deltaX+line.Start.X, height-line.Start.Y);
-                var end = new PointF(deltaX+line.End.X, height-line.End.Y);
+                var start = Point(line.Start);
+                var end = Point(line.End);
                 if (line.CurveControlPoint1 == null)
                 {
                     path.AddLine(start, end);
                     continue;
                 }
 
-                var controlPoint1 = new PointF(deltaX+line.CurveControlPoint1.X, height-line.CurveControlPoint1.Y);
+                var controlPoint1 =  Point(line.CurveControlPoint1);
                 if (line.CurveControlPoint2 == null)
                 {
                     path.AddBeziers(new[] {start, controlPoint1, end});
                     continue;
                 }
 
-                var controlPoint2 = new PointF(deltaX+line.CurveControlPoint2.X, height-line.CurveControlPoint2.Y);
+                var controlPoint2 = Point(line.CurveControlPoint2);
                 path.AddBezier(start, controlPoint1, controlPoint2, end);
             }
 
             path.FillMode = shape.EvenOddRule ? FillMode.Alternate : FillMode.Winding;
             path.CloseFigure();
-            graphics.FillPath(Brushes.White, path);
+            try
+            {
+                graphics.FillPath(Brushes.White, path);
+            }
+            catch (OverflowException e)
+            {
+                Log.Error(e.ToString());
+              
+            }
             return result;
         }
 

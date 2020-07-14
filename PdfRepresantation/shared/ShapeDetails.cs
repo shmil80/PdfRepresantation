@@ -14,7 +14,7 @@ namespace PdfRepresantation
         Both = 3
     }
 
-    public class BaseShapeDetails
+    public class ClippingPath
     {
         public bool EvenOddRule { get; set; }
         public IList<ShapeLine> Lines = new List<ShapeLine>();
@@ -22,9 +22,16 @@ namespace PdfRepresantation
         public float MinY => Lines.Min(l => l.AllPoints.Min(p => p.Y));
         public float MaxX => Lines.Max(l => l.AllPoints.Max(p => p.X));
         public float MaxY => Lines.Max(l => l.AllPoints.Max(p => p.Y));
-    }
+        public ClippingPath Clone()
+        {
+            return new ClippingPath
+            {
+                EvenOddRule = EvenOddRule,
+                Lines = new List<ShapeLine>(Lines)
+            };
+        } }
 
-    public class ShapeDetails : BaseShapeDetails, IPdfDrawingOrdered
+    public class ShapeDetails : ClippingPath, IPdfDrawingOrdered
     {
         public ShapeOperation ShapeOperation { get; set; }
         public float LineWidth { get; set; }
@@ -101,11 +108,4 @@ namespace PdfRepresantation
         }
     }
 
-    public class ClippingPath : BaseShapeDetails
-    {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float ScaleWidth { get; set; }
-        public float ScaleHeight { get; set; }
-    }
 }

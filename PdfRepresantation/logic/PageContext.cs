@@ -11,6 +11,6 @@ namespace PdfRepresantation
         internal int PageNumber { get; set; }
 
         internal LinkManager LinkManager { get; set; }
-        internal ClippingPath CurrentBBox;
+        internal PdfCanvasProcessorWithClip Processor{ get; set; }
     }
 }
