@@ -17,10 +17,11 @@ namespace PdfRepresantation
         public float FontSize { get; set; }
         public PdfFontDetails Font { get; set; }
         public TextRenderDetails StrokeColore { get; set; }
-        public float CharSpacing { get; set; }
+        public float SpaceWidth { get; set; }
         public string Link { get; set; }
         public float Rotation { get; set; }
         public float BottomInOwnPlane { get; set; }
+        public bool EndBlock { get; set; }
 //        public bool IsDigit { get; set; }
 
         public override string ToString() => Value;

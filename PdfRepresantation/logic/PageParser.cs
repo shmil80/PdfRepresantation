@@ -42,11 +42,11 @@ namespace PdfRepresantation
             switch (type)
             {
                 case EventType.BEGIN_TEXT:
-                case EventType.END_TEXT: break;
-                case EventType.CLIP_PATH_CHANGED:
+                case EventType.CLIP_PATH_CHANGED: break;
+                case EventType.END_TEXT:
+                    textParser.MarkAsEnd();
                     break;
                 case EventType.RENDER_PATH:
-
                     var pathInfo = (PathRenderInfo) data;
                     shapeParser.ParsePath(pathInfo, orderIndex++);
                     break;
@@ -66,7 +66,7 @@ namespace PdfRepresantation
             return new[]
             {
                 EventType.RENDER_TEXT, EventType.RENDER_IMAGE,
-                EventType.RENDER_PATH, EventType.CLIP_PATH_CHANGED
+                EventType.RENDER_PATH, EventType.END_TEXT
             };
         }
 

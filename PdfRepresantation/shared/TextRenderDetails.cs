@@ -7,6 +7,7 @@ namespace PdfRepresantation
         Invisible = 0,
         Fill = 1,
         Stroke = 2,
+        //TODO clip the path in the event "END_TEXT" via path.AddString method of system.drawing 
         Path = 4,
         Fill_Path = Fill | Path,
         Fill_Stroke = Fill | Stroke,

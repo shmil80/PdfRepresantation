@@ -110,7 +110,10 @@ namespace PdfRepresantation
             PdfTextLineDetails line, StringBuilder sb)
         {
             sb.Append($@"
-        <div class=""line"" style=""");
+        <div class=""line"" ");
+            if (!line.EndBlock)
+                sb.Append("data-not-end-block ");
+            sb.Append("style=\"");
             if (line.Rotation.HasValue)
                 sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");
             sb.Append("right:").Append(Math.Round(line.Right, config.RoundDigits))

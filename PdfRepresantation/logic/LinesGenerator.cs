@@ -32,10 +32,10 @@ namespace PdfRepresantation
             {
                 if (pageContext.PageRTL)
                 {
-                    if (t.Value == " " && t.Width < t.CharSpacing)
+                    if (t.Value == " " && t.Width < t.SpaceWidth)
                     {
-                        t.Left = t.Right - t.CharSpacing;
-                        t.Width = t.CharSpacing;
+                        t.Left = t.Right - t.SpaceWidth;
+                        t.Width = t.SpaceWidth;
                     }
 
                     t.Start = pageContext.PageWidth - t.Right;
@@ -43,8 +43,8 @@ namespace PdfRepresantation
                 }
                 else
                 {
-                    if (t.Value == " " && t.Width < t.CharSpacing)
-                        t.Width = t.CharSpacing;
+                    if (t.Value == " " && t.Width < t.SpaceWidth)
+                        t.Width = t.SpaceWidth;
                     t.Start = t.Left;
                     t.End = t.Right;
                 }

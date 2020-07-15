@@ -53,7 +53,8 @@ namespace PdfRepresantation
                 Top = top,
                 Width = right - left,
                 Height = bottom - top,
-                Rotation = rotation==0?(float?) null:rotation
+                Rotation = rotation==0?(float?) null:rotation,
+                EndBlock = inEnd
             });
         }
 
@@ -82,9 +83,9 @@ namespace PdfRepresantation
                         AddLine();
                         InitProperties();
                     }
-                    else if (last.End + last.CharSpacing < current.Start)
+                    else if (last.End + last.SpaceWidth < current.Start)
                     {
-                        if (last.End + last.CharSpacing * 2 < current.Start)
+                        if (last.End + last.SpaceWidth * 2 < current.Start)
                         {
                             AddLine();
                             InitProperties();
@@ -131,7 +132,7 @@ namespace PdfRepresantation
                     Bottom = current.Bottom,
                     BottomInOwnPlane = current.BottomInOwnPlane,
                     Rotation = current.Rotation,
-                    CharSpacing = current.CharSpacing,
+                    SpaceWidth = current.SpaceWidth,
                     Font = current.Font,
                     FontSize = current.FontSize,
                     StrokeColore = current.StrokeColore,
@@ -145,7 +146,7 @@ namespace PdfRepresantation
             }
         }
 
-
+        private bool inEnd;
         private IList<PdfTextResult> MergeTextInLine()
         {
             var result = new LinkedList<PdfTextResult> { };
@@ -156,6 +157,7 @@ namespace PdfRepresantation
             for (var index = 0; index < blocks.Count; index++)
             {
                 var current = blocks[index];
+                inEnd = current.EndBlock;
                 bool currentRTL =
                     RightToLeftManager.Instance.AssignNeutral(pageContext.PageRTL, current, blocks, index);
                 bool opositeDirection = pageContext.PageRTL != currentRTL;

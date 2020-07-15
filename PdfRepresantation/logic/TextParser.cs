@@ -44,7 +44,7 @@ namespace PdfRepresantation
                 Rotation = position.Angle,
                 BottomInOwnPlane = pageContext.PageHeight -position.BottomInOwnPlane,
                 StrokeColore = TextRenderManager.GetColor(pageContext.Page, textRenderInfo),
-                CharSpacing = textRenderInfo.GetSingleSpaceWidth(),
+                SpaceWidth = textRenderInfo.GetSingleSpaceWidth(),
                 Font = GetFont(textRenderInfo),
             };
             item.FontSize = FontManager.Instance.GetFontSize(textRenderInfo, item);
@@ -63,6 +63,12 @@ namespace PdfRepresantation
             }
 
             return font;
+        }
+
+        public void MarkAsEnd()
+        {
+            if(texts.Count>0)
+                texts[texts.Count - 1].EndBlock = true;
         }
     }
 }

@@ -56,18 +56,6 @@ namespace PdfRepresantation
                 CurrentClipping.Clipings.Add(clip);
         }
 
-        private bool IsBigger(ClippingPath me, ClippingPath other)
-        {
-            if (me.MinX < other.MinX-0.0001) return true;
-            if (me.MaxX > other.MaxX+0.0001) return true;
-            if (me.MinY < other.MinY-0.0001) return true;
-            if (me.MaxY > other.MaxY+0.0001) return true;
-            if (other.MinX < me.MinX-0.0001) return false;
-            if (other.MaxX > me.MaxX+0.0001) return false;
-            if (other.MinY < me.MinY-0.0001) return false;
-            if (other.MaxY > me.MaxY+0.0001) return false;
-            return me.Lines.Count < other.Lines.Count;
-        }
 
         private void Pop()
         {
