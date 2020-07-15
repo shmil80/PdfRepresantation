@@ -54,7 +54,7 @@ namespace PdfRepresantation
                 Width = right - left,
                 Height = bottom - top,
                 Rotation = rotation==0?(float?) null:rotation,
-                EndBlock = inEnd
+                Blocks = blocks.Select(b=>b.Group.Value).Distinct().ToArray()
             });
         }
 
@@ -69,6 +69,7 @@ namespace PdfRepresantation
 
         private void CalculateLines()
         {
+            
             lines = new List<PdfTextLineDetails>();
             InitProperties();
             foreach (var current in group)
@@ -141,12 +142,12 @@ namespace PdfRepresantation
                     Width = current.Start - last.End,
                     Height = current.Height,
                     Link = current.Link,
+                    Group = current.Group,
                     Value = " "
                 });
             }
         }
 
-        private bool inEnd;
         private IList<PdfTextResult> MergeTextInLine()
         {
             var result = new LinkedList<PdfTextResult> { };
@@ -157,7 +158,6 @@ namespace PdfRepresantation
             for (var index = 0; index < blocks.Count; index++)
             {
                 var current = blocks[index];
-                inEnd = current.EndBlock;
                 bool currentRTL =
                     RightToLeftManager.Instance.AssignNeutral(pageContext.PageRTL, current, blocks, index);
                 bool opositeDirection = pageContext.PageRTL != currentRTL;

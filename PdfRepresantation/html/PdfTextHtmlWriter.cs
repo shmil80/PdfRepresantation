@@ -111,8 +111,8 @@ namespace PdfRepresantation
         {
             sb.Append($@"
         <div class=""line"" ");
-            if (!line.EndBlock)
-                sb.Append("data-not-end-block ");
+            if (line.Blocks!=null)
+                sb.Append("block-group=\"").Append(string.Join(",",line.Blocks)).Append("\" ");
             sb.Append("style=\"");
             if (line.Rotation.HasValue)
                 sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");

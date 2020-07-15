@@ -72,6 +72,7 @@ namespace PdfRepresantation
 
         public virtual PdfPageDetails CreatePageDetails()
         {
+            textParser.MarkAsEnd();
             pageContext.PageRTL = RightToLeftManager.Instance.FindRightToLeft(textParser.texts);
             var lines = linesGenerator.CreateLines(textParser.texts);
 

@@ -21,7 +21,7 @@ namespace PdfRepresantation
         public string Link { get; set; }
         public float Rotation { get; set; }
         public float BottomInOwnPlane { get; set; }
-        public bool EndBlock { get; set; }
+        public int? Group { get; set; }
 //        public bool IsDigit { get; set; }
 
         public override string ToString() => Value;

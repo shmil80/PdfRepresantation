@@ -17,7 +17,7 @@ namespace PdfRepresantation
             this.pageContext = pageContext;
         }
 
- 
+
         public virtual void ParseText(TextRenderInfo textRenderInfo)
         {
             var text = textRenderInfo.GetText();
@@ -42,11 +42,13 @@ namespace PdfRepresantation
                 Width = position.Width,
                 Height = position.Height,
                 Rotation = position.Angle,
-                BottomInOwnPlane = pageContext.PageHeight -position.BottomInOwnPlane,
+                BottomInOwnPlane = pageContext.PageHeight - position.BottomInOwnPlane,
                 StrokeColore = TextRenderManager.GetColor(pageContext.Page, textRenderInfo),
                 SpaceWidth = textRenderInfo.GetSingleSpaceWidth(),
                 Font = GetFont(textRenderInfo),
             };
+            if (string.IsNullOrWhiteSpace(text) && texts.Count > 0)
+                item.Group = texts[texts.Count - 1].Group;
             item.FontSize = FontManager.Instance.GetFontSize(textRenderInfo, item);
             RightToLeftManager.Instance.AssignRtl(item, textRenderInfo.GetUnscaledWidth() < 0);
             pageContext.LinkManager.AssignLink(item);
@@ -65,10 +67,19 @@ namespace PdfRepresantation
             return font;
         }
 
+        private int blockIndex;
+
         public void MarkAsEnd()
         {
-            if(texts.Count>0)
-                texts[texts.Count - 1].EndBlock = true;
+            if (texts.Count == 0 || texts[texts.Count - 1].Group.HasValue)
+                return;
+            blockIndex++;
+            for (var i = texts.Count - 1; i >= 0; i--)
+            {
+                if (texts[i].Group.HasValue)
+                    break;
+                texts[i].Group = blockIndex;
+            }
         }
     }
 }
