@@ -6,5 +6,6 @@
         public string BasicFontFamily { get; set; }
         public bool Bold { get; set; }
         public bool Italic { get; set; }
+        public byte[] Buffer { get; set; }
     }
 }

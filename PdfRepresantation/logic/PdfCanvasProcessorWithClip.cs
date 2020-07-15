@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -6,10 +7,14 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 
 namespace PdfRepresantation
 {
+    class ClippingGroup
+    {
+        public readonly List<ClippingPath> Clipings=new List<ClippingPath>();
+    }
     class PdfCanvasProcessorWithClip : PdfCanvasProcessor
     {
-        public ClippingPath CurrentClipping =>clipings.Count==0?null: clipings.Peek();
-        private readonly Stack<ClippingPath> clipings = new Stack<ClippingPath>();
+        public ClippingGroup CurrentClipping =>clipings.Count==0?null: clipings.Peek();
+        private readonly Stack<ClippingGroup> clipings = new Stack<ClippingGroup>();
 
         private Dictionary<string, IContentOperator> clipOperators = new Dictionary<string, IContentOperator>();
 
@@ -43,19 +48,12 @@ namespace PdfRepresantation
         }
        
  
-        public void Clip(ClippingPath noOpPainted)
+        public void Clip(ClippingPath clip)
         {
             if(clipings.Count == 0)
-                clipings.Push(noOpPainted);
+                clipings.Push(new ClippingGroup{Clipings = { clip}});
             else
-            {
-                var current = clipings.Pop();
-                //normally we need to intesect them. but this is good approximation
-                if(!IsBigger(noOpPainted,current))
-                    clipings.Push(noOpPainted);
-                else 
-                    clipings.Push(current);
-            }
+                CurrentClipping.Clipings.Add(clip);
         }
 
         private bool IsBigger(ClippingPath me, ClippingPath other)
@@ -80,7 +78,11 @@ namespace PdfRepresantation
         private void Push()
         {
             if (clipings.Count > 0)
-                clipings.Push(CurrentClipping.Clone());
+            {
+                var item = new ClippingGroup();
+                item.Clipings.AddRange(clipings.Reverse().SelectMany(l=>l.Clipings));
+                clipings.Push(item);
+            }
         }
         
 

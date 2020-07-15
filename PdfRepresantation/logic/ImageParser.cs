@@ -49,16 +49,17 @@ namespace PdfRepresantation
                 //wrong format of image
                 return;
             }
+
             var ctm = data.GetImageCtm();
-            var position=new RectangleRotated(ctm);
+            var position = new RectangleRotated(ctm);
             var image = new PdfImageDetails
             {
                 Left = position.Left,
                 Bottom = pageContext.PageHeight - position.Bottom,
                 Width = position.Width,
                 Height = position.Height,
-                Rotation=position.Angle==0?(float?) null:position.Angle,
-                Top = pageContext.PageHeight - position.Bottom- position.Height,
+                Rotation = position.Angle == 0 ? (float?) null : position.Angle,
+                Top = pageContext.PageHeight - position.Bottom - position.Height,
                 Right = pageContext.PageWidth - position.Left - position.Width,
                 Order = orderIndex,
             };
@@ -66,12 +67,12 @@ namespace PdfRepresantation
                 ApplyMask(data, imageWrapper);
             if (pageContext.Processor.CurrentClipping != null)
             {
-                var clippingMask = CreateClippingMask(image.Left,image.Top,
-                    imageWrapper.Bitmap.Width/image.Width,
-                    imageWrapper.Bitmap.Height/image.Height,
+                var clippingMask = CreateClippingMask(image.Left, image.Top,
+                    imageWrapper.Bitmap.Width / image.Width,
+                    imageWrapper.Bitmap.Height / image.Height,
                     imageWrapper.Bitmap.Width, imageWrapper.Bitmap.Height,
                     pageContext.Processor.CurrentClipping);
-                if(clippingMask!=null)
+                if (clippingMask != null)
                     MergeMaskImage(imageWrapper, clippingMask);
             }
 
@@ -80,53 +81,65 @@ namespace PdfRepresantation
             images.Add(image);
         }
 
-        private Bitmap CreateClippingMask(float x,float y,
-            float scaleH,float scaleV,
-            int width, int height, ClippingPath shape)
+        private Bitmap CreateClippingMask(float x, float y,
+            float scaleH, float scaleV,
+            int width, int height, ClippingGroup @group)
         {
-            if (shape.Lines.All(l => l.AllPoints.All(p => Math.Abs(p.X) > 100000 || Math.Abs(p.Y) > 100000)))
+            if (@group.Clipings.All(s =>
+                s.Lines.All(l => l.AllPoints.All(p => Math.Abs(p.X) > 100000 || Math.Abs(p.Y) > 100000))))
                 return null;
             Bitmap result = new Bitmap(width, height);
             var graphics = Graphics.FromImage(result);
             graphics.FillRectangle(Brushes.Black, 0f, 0f, pageContext.PageWidth, pageContext.PageHeight);
-            GraphicsPath path = new GraphicsPath();
 
             PointF Point(ShapePoint p)
             {
-                return new PointF(scaleH*(p.X-x),scaleV*(p.Y-y));
+                return new PointF(scaleH * (p.X - x), scaleV * (p.Y - y));
             }
-            foreach (var line in shape.Lines)
+
+            Region region = null;
+            foreach (var shape in @group.Clipings)
             {
-                var start = Point(line.Start);
-                var end = Point(line.End);
-                if (line.CurveControlPoint1 == null)
+                GraphicsPath path = new GraphicsPath();
+                foreach (var line in shape.Lines)
                 {
-                    path.AddLine(start, end);
-                    continue;
+                    var start = Point(line.Start);
+                    var end = Point(line.End);
+                    if (line.CurveControlPoint1 == null)
+                    {
+                        path.AddLine(start, end);
+                        continue;
+                    }
+
+                    var controlPoint1 = Point(line.CurveControlPoint1);
+                    if (line.CurveControlPoint2 == null)
+                    {
+                        path.AddBeziers(new[] {start, controlPoint1, end});
+                        continue;
+                    }
+
+                    var controlPoint2 = Point(line.CurveControlPoint2);
+                    path.AddBezier(start, controlPoint1, controlPoint2, end);
                 }
 
-                var controlPoint1 =  Point(line.CurveControlPoint1);
-                if (line.CurveControlPoint2 == null)
-                {
-                    path.AddBeziers(new[] {start, controlPoint1, end});
-                    continue;
-                }
+                path.FillMode = shape.EvenOddRule ? FillMode.Alternate : FillMode.Winding;
+                path.CloseFigure();
 
-                var controlPoint2 = Point(line.CurveControlPoint2);
-                path.AddBezier(start, controlPoint1, controlPoint2, end);
+                if (region == null) 
+                    region = new Region(path);
+                else
+                    region.Intersect(path);
             }
 
-            path.FillMode = shape.EvenOddRule ? FillMode.Alternate : FillMode.Winding;
-            path.CloseFigure();
             try
             {
-                graphics.FillPath(Brushes.White, path);
+                graphics.FillRegion(Brushes.White, region);
             }
             catch (OverflowException e)
             {
                 Log.Error(e.ToString());
-              
             }
+
             return result;
         }
 

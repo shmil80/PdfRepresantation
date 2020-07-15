@@ -21,6 +21,8 @@ namespace PdfRepresantation
             if (config == null)
                 config = new HtmlWriterConfig();
             this.config = config;
+            if (config.DirFiles != null && !Directory.Exists(config.DirFiles))
+                Directory.CreateDirectory(config.DirFiles);
             if (config.DrawShapes)
                 drawWriter = CreateDrawWriter();
             if (config.AddHeader)

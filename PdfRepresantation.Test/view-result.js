@@ -157,7 +157,7 @@ var setPath = function (path, zoom) {
 
 };
 var setFontSize = function (rule, zoom) {
-    if (!rule.selectorText.startsWith(".font-size-"))
+    if (!rule.selectorText||!rule.selectorText.startsWith(".font-size-"))
         return;
     var origin = rule['origin'];
     if (!origin) {

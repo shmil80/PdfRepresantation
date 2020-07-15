@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using iText.IO.Font;
 using iText.IO.Font.Constants;
+using iText.IO.Source;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 
 namespace PdfRepresantation
@@ -26,17 +29,54 @@ namespace PdfRepresantation
 
         public PdfFontDetails CreateFont(PdfFont pdfFont)
         {
+            var fontProgram = pdfFont.GetFontProgram();
             var font = new PdfFontDetails();
             var fontName
                 = pdfFont.GetFontProgram().GetFontNames().GetFontName();
+            if (fontName == null)
+            {
+                fontName = "Times New Roman";
+            }
+
             font.FontFamily = fontName;
             var basicFontFamily = fontFamilyRegex.Replace(fontName, "");
             basicFontFamily = new string(SpaceInCamelCase(basicFontFamily).ToArray());
             font.BasicFontFamily = basicFontFamily.Trim();
-            font.Bold = pdfFont.GetFontProgram().GetFontNames().GetFontWeight() >= FontWeights.BOLD ||
+            font.Bold = fontProgram.GetFontNames().GetFontWeight() >= FontWeights.BOLD ||
                         fontName.Contains("bold") || fontName.Contains("Bold");
             font.Italic = fontName.Contains("italic") || fontName.Contains("Italic");
+            font.Buffer = CreateBuffer(pdfFont);
             return font;
+        }
+
+        private byte[] CreateBuffer(PdfFont pdfFont)
+        {
+            //TODO the buffer of the font isn't completed
+            return null;
+            
+            if (!pdfFont.IsEmbedded())
+                return null;
+            var fontProgram = pdfFont.GetFontProgram();
+            var field = fontProgram.GetType()
+                .GetField("fontFile", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (field == null)
+                return null;
+            var stream = field.GetValue(fontProgram) as PdfStream;
+            if (stream == null)
+                return null;
+            var buffer = stream.GetBytes();
+//            var s = ((PdfDictionary) pdfFont.GetPdfObject())
+//                .GetAsName(PdfName.Subtype).GetValue();
+//            switch (s)
+//            {
+//                case "Type3":
+//                case "Type1":
+//                case "Type0":
+//                case "TrueType":
+//                    break;
+//            }
+
+            return buffer;
         }
 
         private IEnumerable<char> SpaceInCamelCase(string s)
@@ -50,20 +90,20 @@ namespace PdfRepresantation
             }
         }
 
-        public float GetFontSize(TextRenderInfo textRenderInfo,PdfTextBlock text)
+        public float GetFontSize(TextRenderInfo textRenderInfo, PdfTextBlock text)
         {
             var fontSize = textRenderInfo.GetFontSize();
             var height = text.Height;
             if (fontSize > 0.99 && fontSize < 1.01)
             {
                 LogWrongFontSize("no font size. take height of line:" + height);
-               
+
                 return height * 1.05F;
             }
 
             var ctm = textRenderInfo.GetGraphicsState().GetCtm();
-            var heightFont = ctm.Get(Matrix.I22);
-            if (heightFont > 0.99 && heightFont < 1.01&&height>0)
+            var yToY = ctm.Get(Matrix.I22);
+            if (yToY > 0.99 && yToY < 1.01 && height > 0)
             {
                 if (fontSize > height * 1.3)
                 {
@@ -73,22 +113,23 @@ namespace PdfRepresantation
             }
             else
             {
-                if (heightFont > 0)
+                if (yToY > 0)
                 {
-                    fontSize *= heightFont;
-                    LogWrongFontSize("height font positive: " + heightFont);
+                    fontSize *= yToY;
+                    LogWrongFontSize("height font positive: " + yToY);
                 }
                 else
-                    fontSize *= -heightFont;
+                    fontSize *= -yToY;
             }
 
             return fontSize;
         }
 
         private string lastLog;
+
         private void LogWrongFontSize(string m)
         {
-            if (!Log.DebugSupported||lastLog == m)
+            if (!Log.DebugSupported || lastLog == m)
                 return;
             lastLog = m;
             Log.Debug(m);

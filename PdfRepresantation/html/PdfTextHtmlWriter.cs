@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -30,11 +31,28 @@ namespace PdfRepresantation
         .font-size-").Append((size / 2).ToString(formatNumInClassName))
                     .Append("{font-size:").Append(size / 2).Append("px;}");
             }
-                sb.Append(@"
+
+            sb.Append(@"
         .bold{font-weight: bold;}");
 
             foreach (var pair in fontRef)
             {
+                if (pair.Key.Buffer != null)
+                {
+                    sb.Append(@"
+        @font-face { 
+            font-family: '").Append(pair.Key.FontFamily).Append(@"';
+            src: url(");
+                    AssignEmbeddedFont(pair.Key, pair.Value, sb);
+                    sb.Append(@") 
+            ");
+                    if ( config.DirFiles == null)
+                        sb.Append(@"format('truetype')");
+                    sb.Append(@";,
+            font-weight: ").Append(pair.Key.Bold ? "bold" : "normal").Append(@";
+            font-style: ").Append(pair.Key.Italic ? "italic" : "normal").Append(@";
+        }");
+                }
 
                 sb.Append(@"
         .font").Append(pair.Value + 1).Append("{font-family:\"").Append(pair.Key.FontFamily)
@@ -44,6 +62,22 @@ namespace PdfRepresantation
                 if (pair.Key.Italic)
                     sb.Append(" font-style: italic;");
                 sb.Append('}');
+            }
+        }
+
+        protected virtual void AssignEmbeddedFont(PdfFontDetails font, int index, StringBuilder sb)
+        {
+            if (config.DirFiles == null)
+            {
+                sb.Append("data:font/ttf;base64, ")
+                    .Append(Convert.ToBase64String(font.Buffer));
+            }
+            else
+            {
+                var file = new FileInfo(Path.Combine(config.DirFiles, $"font-{index++}.ttf"));
+                var path = file.FullName;
+                File.WriteAllBytes(path, font.Buffer);
+                sb.Append('\'').Append(path).Append('\'');
             }
         }
 
@@ -79,12 +113,12 @@ namespace PdfRepresantation
         <div class=""line"" style=""");
             if (line.Rotation.HasValue)
                 sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");
-            sb.Append("right:").Append(Math.Round(line.Right,config.RoundDigits))
-                .Append("px;left:").Append(Math.Round( line.Left,config.RoundDigits))
-                .Append("px;top:").Append(Math.Round(line.Top,config.RoundDigits))
-                .Append("px;width:").Append(Math.Round(line.Width,config.RoundDigits))
-                .Append("px;height:").Append(Math.Round(line.Height,config.RoundDigits))
-                .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom,config.RoundDigits))
+            sb.Append("right:").Append(Math.Round(line.Right, config.RoundDigits))
+                .Append("px;left:").Append(Math.Round(line.Left, config.RoundDigits))
+                .Append("px;top:").Append(Math.Round(line.Top, config.RoundDigits))
+                .Append("px;width:").Append(Math.Round(line.Width, config.RoundDigits))
+                .Append("px;height:").Append(Math.Round(line.Height, config.RoundDigits))
+                .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom, config.RoundDigits))
                 .Append("px\" >");
             PdfLinkResult link = null;
             foreach (var text in line.Texts)
@@ -105,15 +139,14 @@ namespace PdfRepresantation
         protected virtual void AddText(PdfTextResult text,
             Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
         {
-            
-
             sb.Append($@"<span class=""baseline");
             AddFontClass(text, fontRef, sb);
             var b = text.Stroke.MainColor?.GetBrightness();
             if (b > 0.9)
             {
-                sb.Append($@" darken");            
+                sb.Append($@" darken");
             }
+
             sb.Append("\" style=\"");
             AddColor(text, sb);
             sb.Append(@""">");
@@ -136,7 +169,7 @@ namespace PdfRepresantation
             Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
         {
             sb.Append($@" font").Append(fontRef[text.Font] + 1);
-            if(text.Font.Bold)
+            if (text.Font.Bold)
                 sb.Append($@" bold");
             sb.Append(" font-size-")
                 .Append((Math.Round(text.FontSize * 2) / 2)

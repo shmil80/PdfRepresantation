@@ -12,20 +12,18 @@ namespace PdfRepresantation
         public PdfImageHtmlWriter(HtmlWriterConfig config)
         {
             this.config = config;
-            if (config.EmbeddedImages && config.DirImages != null && Directory.Exists(config.DirImages))
-                Directory.CreateDirectory(config.DirImages);
         }
 
         protected virtual void AssignPathImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
         {
-            if (config.EmbeddedImages || config.DirImages == null)
+            if (config.DirFiles == null)
             {
                 sb.Append("data:image/png;base64, ")
                     .Append(Convert.ToBase64String(image.Buffer));
             }
             else
             {
-                var file = new FileInfo(Path.Combine(config.DirImages, $"image-{page.PageNumber}-{indexImage++}.png"));
+                var file = new FileInfo(Path.Combine(config.DirFiles, $"image-{page.PageNumber}-{indexImage++}.png"));
                 var path = file.FullName;
                 File.WriteAllBytes(path, image.Buffer);
                 sb.Append(path);
