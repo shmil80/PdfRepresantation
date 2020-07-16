@@ -11,6 +11,7 @@ namespace PdfRepresantation
         public readonly IList<PdfTextBlock> texts = new List<PdfTextBlock>();
         public readonly Dictionary<PdfFont, PdfFontDetails> fonts = new Dictionary<PdfFont, PdfFontDetails>();
         private readonly PageContext pageContext;
+        private readonly FontManager fontManager=new FontManager();
 
         internal TextParser(PageContext pageContext)
         {
@@ -49,7 +50,7 @@ namespace PdfRepresantation
             };
             if (string.IsNullOrWhiteSpace(text) && texts.Count > 0)
                 item.Group = texts[texts.Count - 1].Group;
-            item.FontSize = FontManager.Instance.GetFontSize(textRenderInfo, item);
+            item.FontSize = fontManager.GetFontSize(textRenderInfo, item);
             RightToLeftManager.Instance.AssignRtl(item, textRenderInfo.GetUnscaledWidth() < 0);
             pageContext.LinkManager.AssignLink(item);
             texts.Add(item);
@@ -60,7 +61,7 @@ namespace PdfRepresantation
             var pdfFont = textRenderInfo.GetFont();
             if (!fonts.TryGetValue(pdfFont, out var font))
             {
-                font = FontManager.Instance.CreateFont(pdfFont);
+                font = fontManager.CreateFont(pdfFont);
                 fonts.Add(pdfFont, font);
             }
 

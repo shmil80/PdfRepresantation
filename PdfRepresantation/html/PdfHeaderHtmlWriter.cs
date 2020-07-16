@@ -12,7 +12,7 @@ namespace PdfRepresantation
             this.config = config;
         }
 
-        public virtual void AddHeader(PdfPageDetails page, StringBuilder sb)
+        public virtual void AddHeader(PdfPageDetails page, PdfHtmlWriterContext sb)
         {
             sb.Append(@"
     <h2 class=""header"" style=""width: ").Append(Math.Round(page.Width, config.RoundDigits))
@@ -24,7 +24,7 @@ namespace PdfRepresantation
             return "Page "+page.PageNumber;
         }
 
-        public virtual void AddStyle(StringBuilder sb)
+        public virtual void AddStyle(PdfHtmlWriterContext sb)
         {
             sb.Append(@"
         .header{

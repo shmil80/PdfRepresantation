@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Web;
 
@@ -12,76 +10,16 @@ namespace PdfRepresantation
     {
         NumberFormatInfo formatNumInClassName = new NumberFormatInfo {NumberDecimalSeparator = "-"};
         protected readonly HtmlWriterConfig config;
+        protected readonly PdfFontHtmlWriter fontWriter;
 
-        public PdfTextHtmlWriter(HtmlWriterConfig config)
+        public PdfTextHtmlWriter(HtmlWriterConfig config, PdfFontHtmlWriter fontWriter)
         {
             this.config = config;
+            this.fontWriter = fontWriter;
         }
 
-        public virtual void AddFontStyle(Dictionary<PdfFontDetails, int> fontRef,
-            IEnumerable<PdfTextLineDetails> allLines,
-            StringBuilder sb)
-        {
-            foreach (var size in allLines
-                .SelectMany(l => l.Texts)
-                .Select(t => Math.Round(t.FontSize * 2))
-                .Distinct())
-            {
-                sb.Append(@"
-        .font-size-").Append((size / 2).ToString(formatNumInClassName))
-                    .Append("{font-size:").Append(size / 2).Append("px;}");
-            }
-
-            sb.Append(@"
-        .bold{font-weight: bold;}");
-
-            foreach (var pair in fontRef)
-            {
-                if (pair.Key.Buffer != null)
-                {
-                    sb.Append(@"
-        @font-face { 
-            font-family: '").Append(pair.Key.FontFamily).Append(@"';
-            src: url(");
-                    AssignEmbeddedFont(pair.Key, pair.Value, sb);
-                    sb.Append(@") 
-            ");
-                    if ( config.DirFiles == null)
-                        sb.Append(@"format('truetype')");
-                    sb.Append(@";,
-            font-weight: ").Append(pair.Key.Bold ? "bold" : "normal").Append(@";
-            font-style: ").Append(pair.Key.Italic ? "italic" : "normal").Append(@";
-        }");
-                }
-
-                sb.Append(@"
-        .font").Append(pair.Value + 1).Append("{font-family:\"").Append(pair.Key.FontFamily)
-                    .Append("\",\"").Append(pair.Key.BasicFontFamily).Append("\"; ");
-                if (pair.Key.Bold)
-                    sb.Append(" font-weight: bold;");
-                if (pair.Key.Italic)
-                    sb.Append(" font-style: italic;");
-                sb.Append('}');
-            }
-        }
-
-        protected virtual void AssignEmbeddedFont(PdfFontDetails font, int index, StringBuilder sb)
-        {
-            if (config.DirFiles == null)
-            {
-                sb.Append("data:font/ttf;base64, ")
-                    .Append(Convert.ToBase64String(font.Buffer));
-            }
-            else
-            {
-                var file = new FileInfo(Path.Combine(config.DirFiles, $"font-{index++}.ttf"));
-                var path = file.FullName;
-                File.WriteAllBytes(path, font.Buffer);
-                sb.Append('\'').Append(path).Append('\'');
-            }
-        }
-
-        public virtual void AddScriptInit(StringBuilder sb)
+        
+        public virtual void AddScriptInit(PdfHtmlWriterContext sb)
         {
             sb.Append(@"
             function BuildDarken(){
@@ -106,8 +44,8 @@ namespace PdfRepresantation
             BuildDarken();");
         }
 
-        public virtual void AddLine(PdfPageDetails page, Dictionary<PdfFontDetails, int> fontRef,
-            PdfTextLineDetails line, StringBuilder sb)
+        public virtual void AddLine(PdfPageDetails page,
+            PdfTextLineDetails line, PdfHtmlWriterContext sb)
         {
             sb.Append($@"
         <div class=""line"" ");
@@ -129,21 +67,20 @@ namespace PdfRepresantation
                 if (text.LinkParent != null)
                 {
                     if (text.LinkParent != link)
-                        AddLink(link = text.LinkParent, fontRef, sb);
+                        AddLink(link = text.LinkParent, sb);
                     continue;
                 }
 
-                AddText(text, fontRef, sb);
+                AddText(text, sb);
             }
 
             sb.Append(@"</div>");
         }
 
-        protected virtual void AddText(PdfTextResult text,
-            Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
+        protected virtual void AddText(PdfTextResult text, PdfHtmlWriterContext sb)
         {
             sb.Append($@"<span class=""baseline");
-            AddFontClass(text, fontRef, sb);
+            fontWriter.AddFontClass(text, sb);
             var b = text.Stroke.MainColor?.GetBrightness();
             if (b > 0.9)
             {
@@ -157,29 +94,20 @@ namespace PdfRepresantation
             sb.Append(@"</span>");
         }
 
-        protected virtual void AddLink(PdfLinkResult link, Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
+        protected virtual void AddLink(PdfLinkResult link,  PdfHtmlWriterContext sb)
         {
             sb.Append($@"<a href=""").Append(link.Link).Append("\">");
             foreach (var text in link.Children)
             {
-                AddText(text, fontRef, sb);
+                AddText(text, sb);
             }
 
             sb.Append(@"</a>");
         }
 
-        protected void AddFontClass(PdfTextResult text,
-            Dictionary<PdfFontDetails, int> fontRef, StringBuilder sb)
-        {
-            sb.Append($@" font").Append(fontRef[text.Font] + 1);
-            if (text.Font.Bold)
-                sb.Append($@" bold");
-            sb.Append(" font-size-")
-                .Append((Math.Round(text.FontSize * 2) / 2)
-                    .ToString(formatNumInClassName));
-        }
+       
 
-        protected virtual void AddText(string text, StringBuilder sb)
+        protected virtual void AddText(string text, PdfHtmlWriterContext sb)
         {
             var textEncoded = HttpUtility.HtmlEncode(text);
             bool lastSpace = false;
@@ -205,7 +133,7 @@ namespace PdfRepresantation
             }
         }
 
-        protected virtual void AddColor(PdfTextResult text, StringBuilder sb)
+        protected virtual void AddColor(PdfTextResult text, PdfHtmlWriterContext sb)
         {
             if (!text.Stroke.MainColor.HasValue)
                 return;
@@ -214,7 +142,7 @@ namespace PdfRepresantation
             sb.Append(";");
         }
 
-        public virtual void AddTextStyle(StringBuilder sb)
+        public virtual void AddTextStyle(PdfHtmlWriterContext sb)
         {
             sb.Append(@"
         .line{

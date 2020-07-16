@@ -20,7 +20,7 @@ namespace PdfRepresantation
 
         protected abstract PdfImageHtmlWriter CreateImageWriter();
 
-        protected virtual void AddShapesAndImages(PdfPageDetails page, StringBuilder sb)
+        protected virtual void AddShapesAndImages(PdfPageDetails page, PdfHtmlWriterContext sb)
         {
             var items = new List<IPdfDrawingOrdered>();
             items.AddRange(page.Shapes);
@@ -50,18 +50,18 @@ namespace PdfRepresantation
             }
         }
 
-        protected abstract void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb);
+        protected abstract void InitGradients(Dictionary<GardientColorDetails, int> gradients, PdfHtmlWriterContext sb);
 
-        protected abstract void AddShape(ShapeDetails shape, StringBuilder sb,
+        protected abstract void AddShape(ShapeDetails shape, PdfHtmlWriterContext sb,
             Dictionary<GardientColorDetails, int> gradients);
 
 
-        public abstract void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb);
+        public abstract void DrawShapesAndImages(PdfPageDetails page, PdfHtmlWriterContext sb);
 
-        public abstract void AddScript(StringBuilder sb);
+        public abstract void AddScript(PdfHtmlWriterContext sb);
 
 
-        public virtual void AddStyle(StringBuilder sb)
+        public virtual void AddStyle(PdfHtmlWriterContext sb)
         {
             sb.Append(@"        
         .canvas{

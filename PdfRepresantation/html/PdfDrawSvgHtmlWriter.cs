@@ -16,7 +16,7 @@ namespace PdfRepresantation
         protected override PdfImageHtmlWriter CreateImageWriter()
             => new PdfImageHtmlSvgWriter(config);
 
-        public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
+        public override void DrawShapesAndImages(PdfPageDetails page, PdfHtmlWriterContext sb)
         {
             sb.Append(@"
     <svg class=""canvas"" height=""").Append(Math.Round(page.Height, config.RoundDigits))
@@ -29,12 +29,13 @@ namespace PdfRepresantation
         }
 
 
-        private void AddPoint(ShapePoint p, StringBuilder sb)
+        private void AddPoint(ShapePoint p, PdfHtmlWriterContext sb)
         {
-            sb.Append(" ").Append(Math.Round(p.X, config.RoundDigits)).Append(" ").Append(Math.Round(p.Y, config.RoundDigits));
+            sb.Append(" ").Append(Math.Round(p.X, config.RoundDigits)).Append(" ")
+                .Append(Math.Round(p.Y, config.RoundDigits));
         }
 
-        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
+        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, PdfHtmlWriterContext sb)
         {
             sb.Append(@"        
         <defs>");
@@ -47,17 +48,18 @@ namespace PdfRepresantation
                 sb.Append(@"
             <linearGradient id=""gradient-").Append(i);
                 if (g.Start != null)
-                    sb.Append(@""" x1=""").Append(g.Start.RelativeX.ToString("P"+config.RoundDigits))
-                        .Append(@""" x2=""").Append(g.End.RelativeX.ToString("P"+config.RoundDigits))
-                        .Append(@""" y1=""").Append(g.Start.RelativeY.ToString("P"+config.RoundDigits))
-                        .Append(@""" y2=""").Append(g.End.RelativeY.ToString("P"+config.RoundDigits));
+                    sb.Append(@""" x1=""").Append(g.Start.RelativeX.ToString("P" + config.RoundDigits))
+                        .Append(@""" x2=""").Append(g.End.RelativeX.ToString("P" + config.RoundDigits))
+                        .Append(@""" y1=""").Append(g.Start.RelativeY.ToString("P" + config.RoundDigits))
+                        .Append(@""" y2=""").Append(g.End.RelativeY.ToString("P" + config.RoundDigits));
                 sb.Append(@""">");
                 foreach (var color in g.Colors)
                 {
                     sb.Append(@"
                 <stop ");
                     if (color.OffSet.HasValue)
-                        sb.Append(@"offset=""").Append(color.OffSet.Value.ToString("P"+config.RoundDigits)).Append(@"""");
+                        sb.Append(@"offset=""").Append(color.OffSet.Value.ToString("P" + config.RoundDigits))
+                            .Append(@"""");
                     sb.Append(@" stop-color=""");
                     PdfHtmlWriter.AppendColor(color.Color, sb);
                     sb.Append(@"""/>");
@@ -71,7 +73,7 @@ namespace PdfRepresantation
         </defs>").Append("");
         }
 
-        protected override void AddShape(ShapeDetails shape, StringBuilder sb,
+        protected override void AddShape(ShapeDetails shape, PdfHtmlWriterContext sb,
             Dictionary<GardientColorDetails, int> gradients)
         {
             if (shape.ShapeOperation == ShapeOperation.None)
@@ -121,7 +123,8 @@ namespace PdfRepresantation
             sb.Append("\"/>");
         }
 
-        private void AppendColor(ColorDetails color, Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
+        private void AppendColor(ColorDetails color, Dictionary<GardientColorDetails, int> gradients,
+            PdfHtmlWriterContext sb)
         {
             switch (color)
             {
@@ -137,7 +140,7 @@ namespace PdfRepresantation
             }
         }
 
-        public override void AddScript(StringBuilder sb)
+        public override void AddScript(PdfHtmlWriterContext sb)
         {
         }
     }

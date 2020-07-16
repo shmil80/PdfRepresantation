@@ -32,17 +32,15 @@ namespace PdfRepresantation.Test
             var htmlWriter = new PdfHtmlWriter(new HtmlWriterConfig { UseCanvas = true });
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
-                if(file.Extension!=".pdf")
+                if (file.Extension != ".pdf")
                     continue;
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-//                if(name!="addingImage")
-//                    continue;
-//                if(name!="pdf-020")
+//                if(name!="")
 //                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);
-                htmlWriter.SaveAsHtml(details, target);
+                htmlWriter.SaveAsHtml(details, target);//,"files/"+name+"-");
             }
 
             var json = JsonConvert.SerializeObject(paths, Formatting.Indented);
@@ -70,8 +68,8 @@ namespace PdfRepresantation.Test
             foreach (var file in new DirectoryInfo(sourceDir).EnumerateFiles())
             {
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-                //                if(name!="building")
-                //                    continue;
+//                if(name!="building")
+//                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".png");
 

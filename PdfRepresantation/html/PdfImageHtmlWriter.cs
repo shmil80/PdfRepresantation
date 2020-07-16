@@ -14,25 +14,24 @@ namespace PdfRepresantation
             this.config = config;
         }
 
-        protected virtual void AssignPathImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        protected virtual void AssignPathImage(PdfPageDetails page, PdfImageDetails image, PdfHtmlWriterContext sb)
         {
-            if (config.DirFiles == null)
+            if ( sb.Prefix == null)
             {
                 sb.Append("data:image/png;base64, ")
                     .Append(Convert.ToBase64String(image.Buffer));
             }
             else
             {
-                var file = new FileInfo(Path.Combine(config.DirFiles, $"image-{page.PageNumber}-{indexImage++}.png"));
-                var path = file.FullName;
-                File.WriteAllBytes(path, image.Buffer);
+                var path = sb.Prefix+ $"image-{page.PageNumber}-{indexImage++}.png";
+                File.WriteAllBytes(Path.Combine(sb.Location,path), image.Buffer);
                 sb.Append(path);
             }
         }
 
-        public abstract void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb);
+        public abstract void AddImage(PdfPageDetails page, PdfImageDetails image, PdfHtmlWriterContext sb);
 
-        public virtual void AddStyle(StringBuilder sb)
+        public virtual void AddStyle(PdfHtmlWriterContext sb)
         {
         }
     }
@@ -44,7 +43,7 @@ namespace PdfRepresantation
         {
         }
 
-        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, PdfHtmlWriterContext sb)
         {
             sb.Append(@"
         <img class=""image"" height=""").Append(Math.Round(image.Height, config.RoundDigits))
@@ -62,7 +61,7 @@ namespace PdfRepresantation
             ;
         }
 
-        public override void AddStyle(StringBuilder sb)
+        public override void AddStyle(PdfHtmlWriterContext sb)
         {
             sb.Append(@"
         .image{position:absolute;}");
@@ -75,7 +74,7 @@ namespace PdfRepresantation
         {
         }
 
-        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, PdfHtmlWriterContext sb)
         {
             var height = Math.Round(image.Height, config.RoundDigits);
             var width = Math.Round(image.Width, config.RoundDigits);
@@ -103,7 +102,7 @@ namespace PdfRepresantation
         {
         }
 
-        public override void AddImage(PdfPageDetails page, PdfImageDetails image, StringBuilder sb)
+        public override void AddImage(PdfPageDetails page, PdfImageDetails image, PdfHtmlWriterContext sb)
         {
             double height;
             double width;

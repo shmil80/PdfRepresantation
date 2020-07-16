@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -21,11 +22,8 @@ namespace PdfRepresantation
             new Regex(@"^.+\+|(PS|PSMT|MT|MS)$|((PS|PSMT|MT|MS)?[,-])?(Bold|Italic|MT|PS)+$",
                 RegexOptions.ExplicitCapture);
 
-        public static readonly FontManager Instance = new FontManager();
-
-        private FontManager()
-        {
-        }
+        private readonly IDictionary<PdfStream, PdfFontFileDetails> cache =
+            new Dictionary<PdfStream, PdfFontFileDetails>();
 
         public PdfFontDetails CreateFont(PdfFont pdfFont)
         {
@@ -42,31 +40,42 @@ namespace PdfRepresantation
             var basicFontFamily = fontFamilyRegex.Replace(fontName, "");
             basicFontFamily = new string(SpaceInCamelCase(basicFontFamily).ToArray());
             font.BasicFontFamily = basicFontFamily.Trim();
+            var lowerName = fontName.ToLowerInvariant();
             font.Bold = fontProgram.GetFontNames().GetFontWeight() >= FontWeights.BOLD ||
-                        fontName.Contains("bold") || fontName.Contains("Bold");
-            font.Italic = fontName.Contains("italic") || fontName.Contains("Italic");
-            font.Buffer = CreateBuffer(pdfFont);
+                        lowerName.Contains("bold");
+            font.Italic = lowerName.Contains("italic");
+            ExtractFont(font, pdfFont);
             return font;
         }
 
-        private byte[] CreateBuffer(PdfFont pdfFont)
+        private void ExtractFont(PdfFontDetails font, PdfFont pdfFont)
         {
-            //TODO the buffer of the font isn't completed
-            return null;
-            
             if (!pdfFont.IsEmbedded())
-                return null;
-            var fontProgram = pdfFont.GetFontProgram();
-            var field = fontProgram.GetType()
-                .GetField("fontFile", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (field == null)
-                return null;
-            var stream = field.GetValue(fontProgram) as PdfStream;
-            if (stream == null)
-                return null;
-            var buffer = stream.GetBytes();
-//            var s = ((PdfDictionary) pdfFont.GetPdfObject())
-//                .GetAsName(PdfName.Subtype).GetValue();
+                return;
+            //TODO the buffer of the font isn't completed
+            //return null;
+            var fontObject = pdfFont.GetPdfObject();
+            var fontDescriptor = GetDescriptor(fontObject);
+            if (fontDescriptor == null)
+                return;
+
+            var fontFile = ExtractFontFile(fontDescriptor, out var type);
+            if (fontFile == null)
+                return;
+            if (!cache.TryGetValue(fontFile, out var fontFileDetails))
+            {
+                fontFileDetails = new PdfFontFileDetails
+                {
+                    FontType = type,
+                    Buffer = fontFile.GetBytes(),
+                    Name = "file-"+font.BasicFontFamily
+                };
+                cache[fontFile] = fontFileDetails;
+            }
+            font.FontFile = fontFileDetails;
+
+
+            //            var s = fontObject.GetAsName(PdfName.Subtype).GetValue();
 //            switch (s)
 //            {
 //                case "Type3":
@@ -75,8 +84,60 @@ namespace PdfRepresantation
 //                case "TrueType":
 //                    break;
 //            }
+        }
 
-            return buffer;
+        private static PdfStream ExtractFontFile(PdfDictionary fontDescriptor, out FontType type)
+        {
+            var fontFile = fontDescriptor.GetAsStream(PdfName.FontFile);
+            if (fontFile != null)
+            {
+                type = FontType.Type1;
+                return fontFile;
+            }
+
+            fontFile = fontDescriptor.GetAsStream(PdfName.FontFile2);
+            if (fontFile != null)
+            {
+                type = FontType.TrueType;
+                return fontFile;
+            }
+
+            fontFile = fontDescriptor.GetAsStream(PdfName.FontFile3);
+            if (fontFile == null)
+            {
+                type = 0;
+                return null;
+            }
+
+            switch (fontFile.GetAsName(PdfName.Subtype).GetValue())
+            {
+                case "Type1C":
+                    type = FontType.CFF_Type1;
+                    break;
+                case "CIDFontType0C":
+                    type = FontType.CFF_Type0;
+                    break;
+                case "OpenType":
+                    type = FontType.CFF_OpenType;
+                    break;
+                default: throw new ArgumentException();
+            }
+
+            return fontFile;
+        }
+
+        private static PdfDictionary GetDescriptor(PdfDictionary fontObject)
+        {
+            var fontDescriptor = fontObject
+                .GetAsDictionary(PdfName.FontDescriptor);
+            if (fontDescriptor != null)
+                return fontDescriptor;
+            fontDescriptor = fontObject
+                .GetAsArray(PdfName.DescendantFonts)?
+                .GetAsDictionary(0)
+                ?.GetAsDictionary(PdfName.FontDescriptor);
+
+            return fontDescriptor;
         }
 
         private IEnumerable<char> SpaceInCamelCase(string s)

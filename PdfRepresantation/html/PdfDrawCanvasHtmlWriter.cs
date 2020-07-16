@@ -9,7 +9,7 @@ namespace PdfRepresantation
     public class PdfDrawCanvasHtmlWriter : PdfDrawHtmlWriter
     {
  
-        public override void DrawShapesAndImages(PdfPageDetails page, StringBuilder sb)
+        public override void DrawShapesAndImages(PdfPageDetails page, PdfHtmlWriterContext sb)
         {
             var width = Math.Round(page.Width, config.RoundDigits);
             var height = Math.Round(page.Height, config.RoundDigits);
@@ -34,11 +34,11 @@ namespace PdfRepresantation
         protected override PdfImageHtmlWriter CreateImageWriter()
             => new PdfImageHtmlCanvasWriter(config);
 
-        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, StringBuilder sb)
+        protected override void InitGradients(Dictionary<GardientColorDetails, int> gradients, PdfHtmlWriterContext sb)
         {
         }
 
-        protected override void AddShape(ShapeDetails shape, StringBuilder sb,
+        protected override void AddShape(ShapeDetails shape, PdfHtmlWriterContext sb,
             Dictionary<GardientColorDetails, int> gradients)
         {
             sb.Append(@"
@@ -69,7 +69,7 @@ namespace PdfRepresantation
                 .Append(");");
         }
 
-        public override void AddScript(StringBuilder sb)
+        public override void AddScript(PdfHtmlWriterContext sb)
         {
             sb.Append(@"
     <script>
@@ -127,7 +127,7 @@ namespace PdfRepresantation
     </script>");
         }
 
-        protected void AppendColor(ColorDetails color, StringBuilder sb)
+        protected void AppendColor(ColorDetails color, PdfHtmlWriterContext sb)
         {
             switch (color)
             {
