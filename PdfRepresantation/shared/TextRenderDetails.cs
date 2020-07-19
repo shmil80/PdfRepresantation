@@ -37,5 +37,21 @@ namespace PdfRepresantation
             var o = other.MainColor.Value;
             return c.A == o.A && c.R == o.R && c.G == o.G && c.B == o.B;
         }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                if (!MainColor.HasValue)
+                    return -1;
+                var c=MainColor.Value;
+                
+                var hashCode = (int)c.A;
+                hashCode = (hashCode * 397) ^ c.R;
+                hashCode = (hashCode * 397) ^ c.G;
+                hashCode = (hashCode * 397) ^ c.B;
+                return hashCode;
+            }
+        }
     }
 }

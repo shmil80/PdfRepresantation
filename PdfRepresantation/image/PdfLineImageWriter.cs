@@ -9,7 +9,7 @@ namespace PdfRepresantation
         public virtual void Init(Graphics graphics)
         {
             graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+            graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
         }
 
