@@ -125,7 +125,7 @@ namespace PdfRepresantation
                 path.FillMode = shape.EvenOddRule ? FillMode.Alternate : FillMode.Winding;
                 path.CloseFigure();
 
-                if (region == null) 
+                if (region == null)
                     region = new Region(path);
                 else
                     region.Intersect(path);
@@ -288,8 +288,10 @@ namespace PdfRepresantation
                         ptrOutput[index] = ptrInput[index]; // blue
                         ptrOutput[index + 1] = ptrInput[index + 1]; // green
                         ptrOutput[index + 2] = ptrInput[index + 2]; // red
-
-                        ptrOutput[index + 3] = ptrMask[index]; //alpha
+                        if (ptrInput[index + 3] > ptrMask[index])
+                            ptrOutput[index + 3] = ptrMask[index]; //alpha
+                        else
+                            ptrOutput[index + 3] = ptrInput[index + 3]; //previous alpha
                     }
                 }
             }

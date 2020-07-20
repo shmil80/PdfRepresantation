@@ -66,6 +66,7 @@ namespace PdfRepresantation
             {
                 fontFileDetails = new PdfFontFileDetails
                 {
+                    HasUnicodeDictionary=fontObject.ContainsKey(PdfName.ToUnicode),
                     FontType = type,
                     Buffer = fontFile.GetBytes(),
                     Name = "file-"+font.BasicFontFamily
@@ -181,6 +182,11 @@ namespace PdfRepresantation
                 }
                 else
                     fontSize *= -yToY;
+                if (fontSize > height * 2||fontSize < height / 2)
+                {
+                    LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
+                    return height;
+                }
             }
 
             return fontSize;

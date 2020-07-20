@@ -15,6 +15,7 @@
         public byte[] Buffer { get; set; }
         public FontType FontType { get; set; }
         public string Name { get; set; }
+        public bool HasUnicodeDictionary { get; set; }
     }
     public class PdfFontDetails
     {

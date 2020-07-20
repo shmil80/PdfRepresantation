@@ -91,7 +91,11 @@ namespace PdfRepresantation
                 sb.Append('\'').Append(path).Append("')");
             }
 
-            sb.Append(@";
+            sb.Append(";");
+            if(font.HasUnicodeDictionary)
+                sb.Append(@"
+            dictionary-unicode:true;");
+            sb.Append(@"
         }");
             sb.CreatedFont.Add(font.Name);
             return true;

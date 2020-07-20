@@ -12,7 +12,15 @@ namespace PdfRepresantation
 
         public ImageFormat Format
         {
-            get => format;
+            get
+            {
+                if (bitmap == null)
+                {
+                    bitmap = (Bitmap) Bitmap.FromStream(stream);
+                    format = bitmap.RawFormat;
+                }
+                return format;
+            }
             set
             {
                 format = value;
