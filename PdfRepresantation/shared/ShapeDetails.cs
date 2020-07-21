@@ -29,7 +29,25 @@ namespace PdfRepresantation
                 EvenOddRule = EvenOddRule,
                 Lines = new List<ShapeLine>(Lines)
             };
-        } }
+        }  
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            WriteBounds(sb);
+            return sb.ToString();
+        }
+
+        protected void WriteBounds(StringBuilder sb)
+        {
+            sb.Append("").Append("")
+                .Append("start:")
+                .Append(MinX.ToString("F2")).Append(",")
+                .Append(MinY.ToString("F2"))
+                .Append(" end:")
+                .Append(MaxX.ToString("F2")).Append(",")
+                .Append(MaxY.ToString("F2"));
+        }
+    }
 
     public class ShapeDetails : ClippingPath, IPdfDrawingOrdered
     {
@@ -42,13 +60,7 @@ namespace PdfRepresantation
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("").Append("")
-                .Append("start:")
-                .Append(MinX.ToString("F2")).Append(",")
-                .Append(MinY.ToString("F2"))
-                .Append(" end:")
-                .Append(MaxX.ToString("F2")).Append(",")
-                .Append(MaxY.ToString("F2"));
+            WriteBounds(sb);
             switch (ShapeOperation)
             {
                 case ShapeOperation.None: break;

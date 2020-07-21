@@ -63,19 +63,29 @@ namespace PdfRepresantation
                 Right = pageContext.PageWidth - position.Left - position.Width,
                 Order = orderIndex,
             };
+            Log.Debug($"image:{{{image.Left},{image.Top},{image.Width},{image.Height}}}");
             if (!MergeSoftMask(data, imageWrapper))
                 ApplyMask(data, imageWrapper);
             if (pageContext.Processor.CurrentClipping != null)
             {
+                Log.Debug($"building clipping mask");
                 var clippingMask = CreateClippingMask(image.Left, image.Top,
                     imageWrapper.Bitmap.Width / image.Width,
                     imageWrapper.Bitmap.Height / image.Height,
                     imageWrapper.Bitmap.Width, imageWrapper.Bitmap.Height,
                     pageContext.Processor.CurrentClipping);
                 if (clippingMask != null)
+                {
                     MergeMaskImage(imageWrapper, clippingMask);
+                    Log.Debug($"applying clipping mask");
+                }
             }
 
+            if (IsEmpty(imageWrapper.Bitmap))
+            {
+                Log.Debug($"image is empty. ignore it!");
+                return;
+            }
 
             image.Buffer = imageWrapper.Buffer;
             images.Add(image);
@@ -153,11 +163,13 @@ namespace PdfRepresantation
                 case null: return false;
                 case PdfStream maskStream:
                     MergeMaskObject(imageWrapper, maskStream);
+                    Log.Debug($"applying mask");
                     return true;
                 case PdfArray array:
                     var spaceName = dict.GetAsName(PdfName.ColorSpace) ??
                                     dict.GetAsArray(PdfName.ColorSpace).GetAsName(0);
                     MergeMaskArray(imageWrapper, array, spaceName);
+                    Log.Debug($"applying array mask");
                     return true;
             }
 
@@ -207,6 +219,7 @@ namespace PdfRepresantation
             if (maskStream == null)
                 return false;
             MergeMaskObject(imageWrapper, maskStream);
+            Log.Debug($"applying soft mask");
 
             return true;
         }
@@ -266,7 +279,33 @@ namespace PdfRepresantation
 
             return output;
         }
+        private bool IsEmpty(Bitmap input)
+        {
+            var rect = new Rectangle(0, 0, input.Width, input.Height);
+            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            bool IsEmpty()
+            {
+                unsafe
+                {
+                    for (int y = 0; y < input.Height; y++)
+                    {
+                        byte* ptrInput = (byte*) bitsInput.Scan0 + y * bitsInput.Stride;
+                        for (int x = 0; x < input.Width; x++)
+                        {
+                            if (ptrInput[4 * x + 3] > 0)// alpha
+                            {
+                                return false;
+                            }                                          
+                        }
+                    }
+                }
+                return true;
+            }
 
+            var result = IsEmpty();
+            input.UnlockBits(bitsInput);
+            return result;
+        }
         private Bitmap ApplyMask(Bitmap input, Bitmap mask)
         {
             Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);

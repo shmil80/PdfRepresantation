@@ -30,11 +30,15 @@ namespace PdfRepresantation
             if (shapeOperation == ShapeOperation.None)
             {
                 clip = CreateClip(evenOddRule, lines);
+                if(Log.DebugSupported)
+                    Log.Debug("shape: clipping. "+clip);
             }
             else
             {
                 var shape = CreateShape(data, orderIndex, evenOddRule, shapeOperation, lines);
                 shapes.Add(shape);
+                if(Log.DebugSupported)
+                    Log.Debug("shape: "+shape);
                 clip = shape;
             }
             if(data.IsPathModifiesClippingPath())
@@ -80,10 +84,6 @@ namespace PdfRepresantation
             var dash = data.GetLineDashPattern();
             shape.StrokeColor = strokeColor;
             shape.FillColor = fillColor;
-            if (Log.DebugSupported)
-            {
-                Log.Debug($"shape: {shape}");
-            }
 
             return shape;
         }
