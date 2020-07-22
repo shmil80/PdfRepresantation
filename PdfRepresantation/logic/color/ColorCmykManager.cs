@@ -11,9 +11,10 @@ namespace PdfRepresantation
 
         public static Color FromCmyk(float c, float m, float y, float k, float alpha)
         {
-            var r = (int) (255 * (1 - c) * (1 - k));
-            var g = (int) (255 * (1 - m) * (1 - k));
-            var b = (int) (255 * (1 - y) * (1 - k));
+            var mk = 1 - k;
+            var r = (int) (255 * (1 - c) * mk);
+            var g = (int) (255 * (1 - m) * mk);
+            var b = (int) (255 * (1 - y) * mk);
             return System.Drawing.Color.FromArgb((int) (alpha * 255), r, g, b);
         }
 

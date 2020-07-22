@@ -22,12 +22,27 @@ namespace PdfRepresantation
             new Regex(@"^.+\+|(PS|PSMT|MT|MS)$|((PS|PSMT|MT|MS)?[,-])?(Bold|Italic|MT|PS)+$",
                 RegexOptions.ExplicitCapture);
 
+        public readonly Dictionary<PdfFont, PdfFontDetails> fonts = new Dictionary<PdfFont, PdfFontDetails>();
+
         private readonly IDictionary<PdfStream, PdfFontFileDetails> cache =
             new Dictionary<PdfStream, PdfFontFileDetails>();
+
+        public PdfFontDetails GetFont(PdfFont pdfFont)
+        {
+            if (!fonts.TryGetValue(pdfFont, out var font))
+            {
+                font = CreateFont(pdfFont);
+                fonts.Add(pdfFont, font);
+            }
+
+            return font;
+        }
 
         public PdfFontDetails CreateFont(PdfFont pdfFont)
         {
             var fontProgram = pdfFont.GetFontProgram();
+            if (pdfFont is PdfType0Font)
+                ArrangeMixOfNumbers(fontProgram);
             var font = new PdfFontDetails();
             var fontName
                 = pdfFont.GetFontProgram().GetFontNames().GetFontName();
@@ -48,6 +63,74 @@ namespace PdfRepresantation
             return font;
         }
 
+        private int StartOfMixOfNumbers(FontProgram fontProgram)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                var g=fontProgram.GetGlyphByCode(0x0013+i);
+                if (g != null)
+                    return i;
+            }
+
+            return 10;
+        }
+
+        private void ArrangeMixOfNumbers(FontProgram fontProgram)
+        {
+            if (!IsMixOfNumbers(fontProgram))
+                return;
+           
+            var startMix = StartOfMixOfNumbers(fontProgram);
+            int startCode, startCorrectChar, length;
+            if (startMix==0)
+            {
+                startCode = 0x0010;
+                length = 14;
+                startCorrectChar = '-';
+            }
+            else
+            {
+                startCode = 0x0013+startMix;
+                length = 11-startMix;
+                startCorrectChar = '0'+startMix;
+            }
+
+            for (int i = 0; i <= length; i++)
+            {
+                var g = fontProgram.GetGlyphByCode(startCode+i);
+                if (g == null)
+                    continue;
+                char correct = (char) (startCorrectChar + i);
+                var unicode = g.GetUnicode();
+                if (unicode != correct)
+                {
+                    g.SetChars(new[] {correct});
+                    g.SetUnicode(correct);
+                }
+            }
+        }
+
+        private static bool IsMixOfNumbers(FontProgram fontProgram)
+        {
+            int val0 = -1;
+            bool val0Varry = false;
+            for (int i = 0; i < 10; i++)
+            {
+                var g = fontProgram.GetGlyphByCode(0x0013 + i);
+                if (g == null)
+                    continue;
+                var unicode = g.GetUnicode();
+                if (unicode < ',' || unicode > ':')
+                    return false;
+                if (val0 == -1)
+                    val0 = unicode - i;
+                else if (val0 != unicode - i)
+                    val0Varry = true;
+            }
+
+            return val0Varry;
+        }
+
         private void ExtractFont(PdfFontDetails font, PdfFont pdfFont)
         {
             if (!pdfFont.IsEmbedded())
@@ -66,13 +149,14 @@ namespace PdfRepresantation
             {
                 fontFileDetails = new PdfFontFileDetails
                 {
-                    HasUnicodeDictionary=fontObject.ContainsKey(PdfName.ToUnicode),
+                    HasUnicodeDictionary = fontObject.ContainsKey(PdfName.ToUnicode),
                     FontType = type,
                     Buffer = fontFile.GetBytes(),
-                    Name = "file-"+font.BasicFontFamily
+                    Name = "file-" + font.BasicFontFamily
                 };
                 cache[fontFile] = fontFileDetails;
             }
+
             font.FontFile = fontFileDetails;
 
 
@@ -182,7 +266,8 @@ namespace PdfRepresantation
                 }
                 else
                     fontSize *= -yToY;
-                if (fontSize > height * 2||fontSize < height / 2)
+
+                if (fontSize > height * 2 || fontSize < height / 2)
                 {
                     LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
                     return height;

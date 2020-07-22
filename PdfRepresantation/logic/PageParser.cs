@@ -27,7 +27,8 @@ namespace PdfRepresantation
                 Page = page,
                 PageNumber = pageNumber,
                 PageHeight = pageSize.GetHeight(),
-                PageWidth = pageSize.GetWidth()
+                PageWidth = pageSize.GetWidth(),
+                FontManager = new FontManager()
             };
             pageContext.LinkManager = new LinkManager(pageContext);
             linesGenerator = new LinesGenerator(pageContext);
@@ -83,7 +84,7 @@ namespace PdfRepresantation
                 Images = imageParser.images,
                 PageNumber = pageContext.PageNumber,
                 Shapes = shapeParser.shapes,
-                Fonts = textParser.fonts.Values.ToList(),
+                Fonts = pageContext.FontManager.fonts.Values.ToList(),
                 Height = pageContext.PageHeight,
                 Width = pageContext.PageWidth
             };

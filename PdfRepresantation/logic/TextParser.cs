@@ -9,10 +9,8 @@ namespace PdfRepresantation
     public class TextParser
     {
         public readonly IList<PdfTextBlock> texts = new List<PdfTextBlock>();
-        public readonly Dictionary<PdfFont, PdfFontDetails> fonts = new Dictionary<PdfFont, PdfFontDetails>();
         private readonly PageContext pageContext;
-        private readonly FontManager fontManager=new FontManager();
-
+ 
         internal TextParser(PageContext pageContext)
         {
             this.pageContext = pageContext;
@@ -46,27 +44,17 @@ namespace PdfRepresantation
                 BottomInOwnPlane = pageContext.PageHeight - position.BottomInOwnPlane,
                 StrokeColore = TextRenderManager.GetColor(pageContext.Page, textRenderInfo),
                 SpaceWidth = textRenderInfo.GetSingleSpaceWidth(),
-                Font = GetFont(textRenderInfo),
+                Font = pageContext.FontManager.GetFont(textRenderInfo.GetFont()),
             };
             if (string.IsNullOrWhiteSpace(text) && texts.Count > 0)
                 item.Group = texts[texts.Count - 1].Group;
-            item.FontSize = fontManager.GetFontSize(textRenderInfo, item);
+            item.FontSize = pageContext.FontManager.GetFontSize(textRenderInfo, item);
             RightToLeftManager.Instance.AssignRtl(item, textRenderInfo.GetUnscaledWidth() < 0);
             pageContext.LinkManager.AssignLink(item);
             texts.Add(item);
         }
 
-        private PdfFontDetails GetFont(TextRenderInfo textRenderInfo)
-        {
-            var pdfFont = textRenderInfo.GetFont();
-            if (!fonts.TryGetValue(pdfFont, out var font))
-            {
-                font = fontManager.CreateFont(pdfFont);
-                fonts.Add(pdfFont, font);
-            }
-
-            return font;
-        }
+        
 
         private int blockIndex;
 

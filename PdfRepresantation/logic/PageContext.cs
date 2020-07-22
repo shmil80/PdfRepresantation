@@ -12,5 +12,6 @@ namespace PdfRepresantation
 
         internal LinkManager LinkManager { get; set; }
         internal PdfCanvasProcessorWithClip Processor{ get; set; }
+        internal FontManager FontManager{ get; set; }
     }
 }
