@@ -41,8 +41,7 @@ namespace PdfRepresantation
         public PdfFontDetails CreateFont(PdfFont pdfFont)
         {
             var fontProgram = pdfFont.GetFontProgram();
-            if (pdfFont is PdfType0Font)
-                ArrangeMixOfNumbers(fontProgram);
+            ArrangeMixOfNumbers(fontProgram, pdfFont);
             var font = new PdfFontDetails();
             var fontName
                 = pdfFont.GetFontProgram().GetFontNames().GetFontName();
@@ -67,7 +66,7 @@ namespace PdfRepresantation
         {
             for (int i = 0; i < 10; i++)
             {
-                var g=fontProgram.GetGlyphByCode(0x0013+i);
+                var g = fontProgram.GetGlyphByCode(0x0013 + i);
                 if (g != null)
                     return i;
             }
@@ -75,14 +74,16 @@ namespace PdfRepresantation
             return 10;
         }
 
-        private void ArrangeMixOfNumbers(FontProgram fontProgram)
+        private void ArrangeMixOfNumbers(FontProgram fontProgram, PdfFont pdfFont)
         {
+            if (NotInTheBugOfMixing(pdfFont))
+                return;
             if (!IsMixOfNumbers(fontProgram))
                 return;
-           
+
             var startMix = StartOfMixOfNumbers(fontProgram);
             int startCode, startCorrectChar, length;
-            if (startMix==0)
+            if (startMix == 0)
             {
                 startCode = 0x0010;
                 length = 14;
@@ -90,14 +91,14 @@ namespace PdfRepresantation
             }
             else
             {
-                startCode = 0x0013+startMix;
-                length = 11-startMix;
-                startCorrectChar = '0'+startMix;
+                startCode = 0x0013 + startMix;
+                length = 11 - startMix;
+                startCorrectChar = '0' + startMix;
             }
 
             for (int i = 0; i <= length; i++)
             {
-                var g = fontProgram.GetGlyphByCode(startCode+i);
+                var g = fontProgram.GetGlyphByCode(startCode + i);
                 if (g == null)
                     continue;
                 char correct = (char) (startCorrectChar + i);
@@ -108,6 +109,38 @@ namespace PdfRepresantation
                     g.SetUnicode(correct);
                 }
             }
+        }
+
+        private bool NotInTheBugOfMixing(PdfFont pdfFont)
+        {
+            if (!(pdfFont is PdfType0Font))
+                return true;
+            var arr = pdfFont.GetPdfObject().GetAsArray(PdfName.DescendantFonts);
+            if (arr?.Count() != 1)
+                return true;
+            var des = arr.GetAsDictionary(0);
+            var subType = des?.GetAsName(PdfName.Subtype);
+            if (subType?.GetValue() != "CIDFontType2")
+                return true;
+            var cidtoGidMap = des.GetAsName(PdfName.CIDToGIDMap);
+            if (cidtoGidMap?.GetValue() != "Identity")
+                return true;
+            var cidSystemInfo = des.GetAsDictionary(PdfName.CIDSystemInfo);
+            var ordering = cidSystemInfo?.GetAsString(PdfName.Ordering);
+            if (ordering?.GetValue() != "Identity")
+                return true;
+            var registry = cidSystemInfo.GetAsString(PdfName.Registry);
+            if (registry?.GetValue() != "Adobe")
+                return true;
+            var supplement = cidSystemInfo.GetAsNumber(PdfName.Supplement);
+            if (supplement == null || supplement.IntValue() != 0)
+                return true;
+            var filter = des.GetAsDictionary(PdfName.FontDescriptor)?
+                .GetAsStream(PdfName.FontFile2)?
+                .GetAsName(PdfName.Filter);
+            if (filter?.GetValue() != "FlateDecode")
+                return true;
+            return false;
         }
 
         private static bool IsMixOfNumbers(FontProgram fontProgram)

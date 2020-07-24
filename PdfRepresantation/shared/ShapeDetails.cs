@@ -56,27 +56,17 @@ namespace PdfRepresantation
         public int Order { get; set; }
         public ColorDetails StrokeColor { get; set; }
         public ColorDetails FillColor { get; set; }
+        public bool FillOperation => ShapeOperation == ShapeOperation.Fill || ShapeOperation == ShapeOperation.Both;
+        public bool StrokeOperation => ShapeOperation == ShapeOperation.Stroke || ShapeOperation == ShapeOperation.Both;
 
         public override string ToString()
         {
             var sb = new StringBuilder();
             WriteBounds(sb);
-            switch (ShapeOperation)
-            {
-                case ShapeOperation.None: break;
-                case ShapeOperation.Stroke:
-                    sb.Append(" stroke:").Append(StringifyColor(StrokeColor));
-                    break;
-                case ShapeOperation.Fill:
-                    sb.Append(" fill:").Append(StringifyColor(FillColor));
-                    break;
-                case ShapeOperation.Both:
-                    sb.Append(" stroke:").Append(StringifyColor(StrokeColor));
-                    sb.Append(" fill:").Append(StringifyColor(FillColor));
-                    break;
-                default: throw new ArgumentOutOfRangeException();
-            }
-
+            if(StrokeOperation)
+                sb.Append(" stroke:").Append(StringifyColor(StrokeColor));
+            if(FillOperation)
+                sb.Append(" fill:").Append(StringifyColor(FillColor));           
             return sb.ToString();
         }
 

@@ -115,11 +115,11 @@ namespace PdfRepresantation
 
             sb.Append("\" stroke-width=\"").Append(shape.LineWidth)
                 .Append("\" fill=\"");
-            AppendColor(shape.ShapeOperation == ShapeOperation.Stroke ? null : shape.FillColor, gradients, sb);
+            AppendColor(!shape.FillOperation ? null : shape.FillColor, gradients, sb);
             if (shape.EvenOddRule)
                 sb.Append("\" fill-rule=\"evenodd");
             sb.Append("\" stroke=\"");
-            AppendColor(shape.ShapeOperation == ShapeOperation.Fill ? null : shape.StrokeColor, gradients, sb);
+            AppendColor(!shape.StrokeOperation ? null : shape.StrokeColor, gradients, sb);
             sb.Append("\"/>");
         }
 

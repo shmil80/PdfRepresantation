@@ -1,0 +1,46 @@
+﻿<Window x:Class="PdfReader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PdfReader"
+        mc:Ignorable="d" Name="Win"
+        Title="Pdf Reader" Background="LightSlateGray">
+    <Window.CommandBindings>
+        <CommandBinding Command="local:MainWindow.LoadCommand" Executed="LoadFile" />
+        <CommandBinding CanExecute="CanZoomIn" Command="local:MainWindow.ZoomInCommand" Executed="IncreaseZoom" />
+        <CommandBinding CanExecute="CanZoomOut" Command="local:MainWindow.ZoomOutCommand" Executed="DecreaseZoom" />
+    </Window.CommandBindings>
+    <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
+                <MenuItem Header="File">
+                    <MenuItem Header="Load" Command="local:MainWindow.LoadCommand" />
+                </MenuItem>
+                <MenuItem Header="View">
+                    <MenuItem Header="Zoom In" Command="local:MainWindow.ZoomInCommand" />
+                    <MenuItem Header="Zoom Out" Command="local:MainWindow.ZoomOutCommand" />
+                </MenuItem>
+            </Menu>
+            <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                <StatusBarItem>
+                    <TextBlock Name="StatusBarText" />
+                </StatusBarItem>
+            </StatusBar>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto" Name="Scroller">
+                <DockPanel Name="Scale">
+                    <DockPanel.LayoutTransform>
+                        <ScaleTransform
+                            CenterX="0" CenterY="0"
+                            ScaleX="1"
+                            ScaleY="1" />
+                    </DockPanel.LayoutTransform>
+                    <StackPanel Name="RootContainer" HorizontalAlignment="Center"
+                                VerticalAlignment="Top" Orientation="Vertical" 
+                                />
+                </DockPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
+</Window>

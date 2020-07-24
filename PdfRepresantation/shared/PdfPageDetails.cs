@@ -12,7 +12,17 @@ namespace PdfRepresantation
         public bool RightToLeft { get; set; }
         public float Width { get; set; }
         public float Height { get; set; }
-
+        public IEnumerable<IPdfDrawingOrdered> OrderedDawings
+        {
+            get
+            {
+                var items = new List<IPdfDrawingOrdered>();
+                items.AddRange(Shapes);
+                items.AddRange(Images);
+                items.Sort((i1, i2) => i1.Order - i2.Order);
+                return items;
+            }
+        }
         public override string ToString() =>
             "<PAGE " + PageNumber +
             ">\r\n---------------------------------------------------------------------------\r\n" +

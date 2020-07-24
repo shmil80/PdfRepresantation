@@ -1,6 +1,6 @@
 ﻿namespace PdfRepresantation
 {
-    interface IPdfDrawingOrdered
+    public interface IPdfDrawingOrdered
     {
         int Order { get; set; }
     }

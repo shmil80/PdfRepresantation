@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using iText.StyledXmlParser.Jsoup.Select;
 
 namespace PdfRepresantation
 {
@@ -12,19 +13,10 @@ namespace PdfRepresantation
         {
             GraphicsPath path = new GraphicsPath();
             CreateLinesInPath(path, shape.Lines, top);
-            switch (shape.ShapeOperation)
-            {
-                case ShapeOperation.Stroke:
-                    StrokeShape(graphics, path, shape);
-                    break;
-                case ShapeOperation.Fill:
-                    FillShape(graphics, path, shape);
-                    break;
-                case ShapeOperation.Both:
-                    StrokeShape(graphics, path, shape);
-                    FillShape(graphics, path, shape);
-                    break;
-            }
+            if (shape.StrokeOperation)
+                StrokeShape(graphics, path, shape);
+            if (shape.FillOperation)
+                FillShape(graphics, path, shape);
         }
 
         protected virtual void CreateLinesInPath(GraphicsPath path, IList<ShapeLine> lines, float top)
@@ -79,7 +71,7 @@ namespace PdfRepresantation
                     brush = new SolidBrush(simpleColor.Color);
                     break;
                 case GardientColorDetails gardientColor:
-                    if (gardientColor.Colors.Count<2)
+                    if (gardientColor.Colors.Count < 2)
                         return Brushes.Blue;
 
                     brush = new LinearGradientBrush(

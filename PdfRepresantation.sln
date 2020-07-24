@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfRepresantation.Test", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfRenderer", "PdfRenderer\PdfRenderer.csproj", "{84BF473D-4CB5-4BDC-8904-EDAADD1CB38E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfReader", "PdfReader\PdfReader.csproj", "{F8FCE261-AA98-4E4A-83D2-6BC7895C2989}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{84BF473D-4CB5-4BDC-8904-EDAADD1CB38E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84BF473D-4CB5-4BDC-8904-EDAADD1CB38E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84BF473D-4CB5-4BDC-8904-EDAADD1CB38E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8FCE261-AA98-4E4A-83D2-6BC7895C2989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8FCE261-AA98-4E4A-83D2-6BC7895C2989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8FCE261-AA98-4E4A-83D2-6BC7895C2989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8FCE261-AA98-4E4A-83D2-6BC7895C2989}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

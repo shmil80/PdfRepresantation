@@ -22,10 +22,6 @@ namespace PdfRepresantation
 
         protected virtual void AddShapesAndImages(PdfPageDetails page, PdfHtmlWriterContext sb)
         {
-            var items = new List<IPdfDrawingOrdered>();
-            items.AddRange(page.Shapes);
-            items.AddRange(page.Images);
-            items.Sort((i1, i2) => i1.Order - i2.Order);
             var gradients = new Dictionary<GardientColorDetails, int>();
             for (int i = 0; i < page.Shapes.Count; i++)
             {
@@ -36,7 +32,7 @@ namespace PdfRepresantation
 
             if (gradients.Count > 0)
                 InitGradients(gradients, sb);
-            foreach (var item in items)
+            foreach (var item in page.OrderedDawings)
             {
                 switch (item)
                 {
