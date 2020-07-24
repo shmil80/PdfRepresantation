@@ -83,7 +83,7 @@ namespace PdfRepresantation
         <path d=""");
             foreach (var line in shape.Lines)
             {
-                if (!line.Start.Equals(lastEnd))
+                if (!line.Start.Same(lastEnd))
                 {
                     sb.Append("M");
                     AddPoint(line.Start, sb);

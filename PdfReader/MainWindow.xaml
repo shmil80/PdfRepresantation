@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PdfReader"
         mc:Ignorable="d" Name="Win"
+        WindowStartupLocation="CenterScreen"
         Title="Pdf Reader" Background="LightSlateGray">
     <Window.CommandBindings>
-        <CommandBinding Command="local:MainWindow.LoadCommand" Executed="LoadFile" />
+        <CommandBinding CanExecute="CanLoad" Command="local:MainWindow.LoadCommand" Executed="LoadFile" />
         <CommandBinding CanExecute="CanZoomIn" Command="local:MainWindow.ZoomInCommand" Executed="IncreaseZoom" />
         <CommandBinding CanExecute="CanZoomOut" Command="local:MainWindow.ZoomOutCommand" Executed="DecreaseZoom" />
     </Window.CommandBindings>
@@ -22,7 +23,7 @@
                     <MenuItem Header="Zoom Out" Command="local:MainWindow.ZoomOutCommand" />
                 </MenuItem>
             </Menu>
-            <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+            <StatusBar Visibility="Hidden" Name="StatusBarPanel" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                 <StatusBarItem>
                     <TextBlock Name="StatusBarText" />
                 </StatusBarItem>

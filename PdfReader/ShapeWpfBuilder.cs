@@ -48,7 +48,7 @@ namespace PdfReader
             ShapePoint position = null;
             foreach (var line in shape.Lines)
             {
-                if (!line.Start.Equals(position))
+                if (!line.Start.Same(position))
                 {
                     figure = new PathFigure {StartPoint = ConvertPoint(line.Start)};
                     figure.IsFilled = fill;

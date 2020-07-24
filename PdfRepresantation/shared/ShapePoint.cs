@@ -7,9 +7,9 @@ namespace PdfRepresantation
     {
         public float X { get; set; }
         public float Y { get; set; }
-        public bool Equals(ShapePoint other) => 
+        public bool Same(ShapePoint other) => 
            other!=null&& Math.Abs(X - other.X) < 0.01 && Math.Abs(Y - other.Y) < 0.01;
-        public override bool Equals(object obj) => Equals(obj as ShapePoint);
+        //public override bool Equals(object obj) => Same(obj as ShapePoint);
 
         public override string ToString() =>$"{X:F2},{Y:F2}";
     }
