@@ -116,10 +116,11 @@ namespace PdfReader
         {
             var run = new Run(text.Value)
             {
+                BaselineAlignment = BaselineAlignment.Baseline,
                 FontSize = text.FontSize,
                 FontWeight = text.Font.Bold ? FontWeights.Bold : FontWeights.Normal,
                 FontStyle = text.Font.Italic ? FontStyles.Italic : FontStyles.Normal,
-                FontFamily = new FontFamily(text.Font.BasicFontFamily),
+                FontFamily = new FontFamily(text.Font.BasicFontFamily+",Times New Roman"),
             };
             if (text.Stroke.MainColor.HasValue)
             {
