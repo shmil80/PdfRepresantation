@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using iText.Kernel.Geom;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 
 namespace PdfRepresantation
@@ -42,20 +43,34 @@ namespace PdfRepresantation
                 return;
             if (Log.DebugSupported)
                 Log.Debug("line:" + string.Join("", lineTexts.Select(t => t.Value)));
-            var bottom = (float)(Math.Round(blocks[0].Bottom*2)/2);
-            float rotation=blocks[0].Rotation;
-            lines.Add(new PdfTextLineDetails
+            var bottom = (float) (Math.Round(blocks[0].Bottom * 2) / 2);
+            var left = this.left;
+            float rotation = blocks[0].Rotation;
+            var item = new PdfTextLineDetails
             {
-                Bottom = bottom,
-                Left = left,
-                Right = pageContext.PageWidth - right,
                 Texts = lineTexts,
-                Top = top,
                 Width = right - left,
-                Height = bottom - top,
-                Rotation = rotation==0?(float?) null:rotation,
-                Blocks = blocks.Select(b=>b.Group.Value).Distinct().ToArray()
-            });
+                Height = -bottom + top,
+                Blocks = blocks.Select(b => b.Group.Value).Distinct().ToArray()
+            };
+            if (rotation == 0)
+            {
+                item.Bottom = pageContext.PageHeight - bottom;
+                item.Left = left;
+            }
+            else
+            {
+                var vector = RectangleRotated.RotateBack(rotation, left, bottom);
+                item.Rotation = rotation;
+                item.Bottom = pageContext.PageHeight - vector.Get(Vector.I2);
+                item.Left =  vector.Get(Vector.I1);
+            }
+
+            item.Right = pageContext.PageWidth - item.Width - item.Left;
+            item.Top = item.Bottom - item.Height;
+
+
+            lines.Add(item);
         }
 
         void InitProperties()
@@ -69,7 +84,6 @@ namespace PdfRepresantation
 
         private void CalculateLines()
         {
-            
             lines = new List<PdfTextLineDetails>();
             InitProperties();
             foreach (var current in group)
@@ -79,7 +93,7 @@ namespace PdfRepresantation
                     continue;
                 if (last != null)
                 {
-                    if(Math.Abs(last.Rotation - current.Rotation) > 0.0001)
+                    if (Math.Abs(last.Rotation - current.Rotation) > 0.0001)
                     {
                         AddLine();
                         InitProperties();
@@ -131,7 +145,6 @@ namespace PdfRepresantation
                 blocks.Add(new PdfTextBlock
                 {
                     Bottom = current.Bottom,
-                    BottomInOwnPlane = current.BottomInOwnPlane,
                     Rotation = current.Rotation,
                     SpaceWidth = current.SpaceWidth,
                     Font = current.Font,

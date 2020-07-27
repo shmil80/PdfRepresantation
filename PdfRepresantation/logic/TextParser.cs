@@ -30,18 +30,15 @@ namespace PdfRepresantation
             }
 
 
-            var position = new RectangleRotated(baseline.GetStartPoint(),
-                baseline.GetEndPoint(),
-                ascentLine.GetStartPoint());
+            var position = new RectangleRotated(baseline,ascentLine);
             PdfTextBlock item = new PdfTextBlock
             {
                 Value = text,
-                Bottom = pageContext.PageHeight - position.Bottom,
+                Bottom = position.Bottom,
                 Left = position.Left,
                 Width = position.Width,
                 Height = position.Height,
                 Rotation = position.Angle,
-                BottomInOwnPlane = pageContext.PageHeight - position.BottomInOwnPlane,
                 StrokeColore = TextRenderManager.GetColor(pageContext.Page, textRenderInfo),
                 SpaceWidth = textRenderInfo.GetSingleSpaceWidth(),
                 Font = pageContext.FontManager.GetFont(textRenderInfo.GetFont()),

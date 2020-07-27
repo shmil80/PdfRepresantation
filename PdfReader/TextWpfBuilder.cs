@@ -17,22 +17,20 @@ namespace PdfReader
         {
             var lineBox = new SelectableTextBlock
             {
-                VerticalAlignment = VerticalAlignment.Bottom,Padding = new Thickness()
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Padding = new Thickness()
                 //Width = line.Width,
                 //Height = line.Height,
                 //Background =Brushes.Transparent,
                 //ClipToBounds = false
             };
-            lineBox.SetValue(Canvas.BottomProperty, (double)(pageContext.page.Height- line.Bottom));
             if (pageContext.page.RightToLeft)
             {
-                lineBox.SetValue(Canvas.RightProperty, (double) line.Right);
                 lineBox.FlowDirection = FlowDirection.RightToLeft;
                 lineBox.HorizontalAlignment = HorizontalAlignment.Right;
             }
             else
             {
-                lineBox.SetValue(Canvas.LeftProperty, (double) line.Left);
                 lineBox.FlowDirection = FlowDirection.LeftToRight;
                 lineBox.HorizontalAlignment = HorizontalAlignment.Left;
             }
@@ -54,14 +52,29 @@ namespace PdfReader
                 lineBox.Inlines.Add(CreateRun(text));
             }
 
-            if (line.Rotation.HasValue)
-            {
-                //lineBox.Inlines.Add(transformation);
-            }
-
             lineBox.Inlines.Add(new Run(""));
 
-            pageContext.pagePanel.Children.Add(lineBox);
+            SetPosition(line, pageContext, lineBox);
+            if (line.Rotation.HasValue)
+            {
+                lineBox.RenderTransformOrigin = new Point(0,1);
+                lineBox.RenderTransform = new RotateTransform {Angle = line.Rotation.Value,};
+            }
+
+             pageContext.pagePanel.Children.Add(lineBox);
+        }
+
+        private static void SetPosition(PdfTextLineDetails line, PageContext pageContext, DependencyObject lineBox)
+        {
+            lineBox.SetValue(Canvas.BottomProperty, (double) (pageContext.page.Height - line.Bottom));
+            if (pageContext.page.RightToLeft)
+            {
+                lineBox.SetValue(Canvas.RightProperty, (double) line.Right);
+            }
+            else
+            {
+                lineBox.SetValue(Canvas.LeftProperty, (double) line.Left);
+            }
         }
 
         private Span CreateLink(PdfLinkResult link)

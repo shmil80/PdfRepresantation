@@ -8,7 +8,7 @@ namespace PdfRepresantation
         public float Left { get; set; }
         public float Width { get; set; }
         public float Right => Left + Width;
-        public float Top => Bottom - Height; 
+        public float Top => Bottom + Height; 
         public float Height { get; set; }
         public float Bottom { get; set; }
         public float Start { get; set; }
@@ -20,7 +20,6 @@ namespace PdfRepresantation
         public float SpaceWidth { get; set; }
         public string Link { get; set; }
         public float Rotation { get; set; }
-        public float BottomInOwnPlane { get; set; }
         public int? Group { get; set; }
 //        public bool IsDigit { get; set; }
 

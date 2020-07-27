@@ -38,8 +38,7 @@
                             ScaleY="1" />
                     </DockPanel.LayoutTransform>
                     <StackPanel Name="RootContainer" HorizontalAlignment="Center"
-                                VerticalAlignment="Top" Orientation="Vertical" 
-                                />
+                                VerticalAlignment="Top" Orientation="Vertical" />
                 </DockPanel>
             </ScrollViewer>
         </DockPanel>

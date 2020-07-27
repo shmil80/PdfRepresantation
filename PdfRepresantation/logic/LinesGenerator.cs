@@ -20,8 +20,8 @@ namespace PdfRepresantation
             return texts
                 .OrderBy(t => t.Rotation)
                 .ThenBy(t => t.Start)
-                .GroupBy(t => (int) Math.Round(t.BottomInOwnPlane * 2))
-                .OrderBy(g => g.Key)
+                .GroupBy(t => (int) Math.Round(t.Bottom * 2))
+                .OrderByDescending(g => g.Key)
                 .SelectMany(g => new LineGenarator(pageContext, g).Lines)
                 .ToList();
         }
