@@ -20,25 +20,26 @@ namespace PdfRepresantation
             return 10;
         }
 
-        class RepairDetails
-        {
-            public char c;
-            public int correctCid;
-            public char unicode;
-        }
+        private readonly ISet<FontProgram> cacheSolved = new HashSet<FontProgram>();
 
         internal void ArrangeMixOfNumbers(FontProgram fontProgram, PdfFont pdfFont, byte[] buffer)
         {
-            if (!(pdfFont is PdfType0Font))
+            if (cacheSolved.Contains(fontProgram))
                 return;
-            if (Enumerable.Range('0',10)
-                .All(c=>fontProgram.GetGlyph(c)==null))
+            cacheSolved.Add(fontProgram);
+            ArrangeMixOfNumbersByGuessing(fontProgram, pdfFont);
+            if (!(pdfFont is PdfType0Font) || buffer == null)
+                return;
+
+            var cmapRepair = new CmapDict(buffer);
+
+            if (Enumerable.Range('0', 10)
+                .All(c => fontProgram.GetGlyph(c) == null))
             {
                 return;
             }
-            
 
-            var cmapRepair = new CmapDict(buffer);
+
             for (char c = '-'; c <= ':'; c++)
             {
                 var correctCid = cmapRepair.GetCode(c);
@@ -57,7 +58,7 @@ namespace PdfRepresantation
             }
         }
 
-        internal void ArrangeMixOfNumbers(FontProgram fontProgram, PdfFont pdfFont)
+        internal void ArrangeMixOfNumbersByGuessing(FontProgram fontProgram, PdfFont pdfFont)
         {
             if (NotInTheBugOfMixing(pdfFont))
                 return;

@@ -16,15 +16,16 @@ namespace PdfRepresantation
 {
     public class FontManager
     {
-        readonly NumberFixer numberFixer=new NumberFixer();
-        readonly FontFileBuilder fileBuilder=new FontFileBuilder();
+        readonly NumberFixer numberFixer = new NumberFixer();
+        readonly FontFileBuilder fileBuilder = new FontFileBuilder();
+
         readonly Regex fontFamilyRegex =
             new Regex(@"^.+\+|(PS|PSMT|MT|MS)$|((PS|PSMT|MT|MS)?[,-])?(Bold|Italic|MT|PS)+$",
                 RegexOptions.ExplicitCapture);
 
         public readonly Dictionary<PdfFont, PdfFontDetails> fonts = new Dictionary<PdfFont, PdfFontDetails>();
 
- 
+
         public PdfFontDetails GetFont(PdfFont pdfFont)
         {
             if (!fonts.TryGetValue(pdfFont, out var font))
@@ -40,7 +41,7 @@ namespace PdfRepresantation
         {
             var fontProgram = pdfFont.GetFontProgram();
             var font = new PdfFontDetails();
-            var fontName= pdfFont.GetFontProgram()
+            var fontName = pdfFont.GetFontProgram()
                 .GetFontNames().GetFontName();
             if (fontName == null)
             {
@@ -55,8 +56,8 @@ namespace PdfRepresantation
             font.Bold = fontProgram.GetFontNames().GetFontWeight() >= FontWeights.BOLD ||
                         lowerName.Contains("bold");
             font.Italic = lowerName.Contains("italic");
-            if(fileBuilder.ExtractFont(font, pdfFont))
-                numberFixer.ArrangeMixOfNumbers(fontProgram, pdfFont,font.FontFile.Buffer);
+            fileBuilder.ExtractFont(font, pdfFont);
+            numberFixer.ArrangeMixOfNumbers(fontProgram, pdfFont, font.FontFile?.Buffer);
             return font;
         }
 

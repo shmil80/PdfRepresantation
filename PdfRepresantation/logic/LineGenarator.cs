@@ -43,7 +43,7 @@ namespace PdfRepresantation
                 return;
             if (Log.DebugSupported)
                 Log.Debug("line:" + string.Join("", lineTexts.Select(t => t.Value)));
-            var bottom = (float) (Math.Round(blocks[0].Bottom * 2) / 2);
+            var bottom = blocks.Min(b=>b.Bottom);
             var left = this.left;
             float rotation = blocks[0].Rotation;
             var item = new PdfTextLineDetails
@@ -78,7 +78,7 @@ namespace PdfRepresantation
             blocks = new List<PdfTextBlock>();
             left = int.MaxValue;
             right = 0;
-            top = int.MaxValue;
+            top = 0;
             last = null;
         }
 
@@ -117,7 +117,7 @@ namespace PdfRepresantation
                     left = current.Left;
                 if (right < current.Right)
                     right = current.Right;
-                if (top > current.Top)
+                if (top < current.Top)
                     top = current.Top;
                 last = current;
             }
