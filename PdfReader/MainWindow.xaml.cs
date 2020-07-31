@@ -91,7 +91,7 @@ namespace PdfReader
 
         private void IncreaseZoom(object sender, ExecutedRoutedEventArgs e)
         {
-            var scale = (ScaleTransform) Scale.LayoutTransform;
+            var scale = (ScaleTransform) RootContainer.LayoutTransform;
 
             scale.ScaleX += 0.1;
             scale.ScaleY += 0.1;
@@ -99,7 +99,7 @@ namespace PdfReader
 
         private void DecreaseZoom(object sender, ExecutedRoutedEventArgs e)
         {
-            var scale = (ScaleTransform) Scale.LayoutTransform;
+            var scale = (ScaleTransform)RootContainer.LayoutTransform;
 
             scale.ScaleX -= 0.1;
             scale.ScaleY -= 0.1;
@@ -107,13 +107,13 @@ namespace PdfReader
 
         private void CanZoomIn(object sender, CanExecuteRoutedEventArgs e)
         {
-            var scale = (ScaleTransform) Scale.LayoutTransform;
+            var scale = (ScaleTransform)RootContainer.LayoutTransform;
             e.CanExecute = scale.ScaleX <= 1.999;
         }
 
         private void CanZoomOut(object sender, CanExecuteRoutedEventArgs e)
         {
-            var scale = (ScaleTransform) Scale.LayoutTransform;
+            var scale = (ScaleTransform)RootContainer.LayoutTransform;
             e.CanExecute = scale.ScaleX >= 0.101;
         }
 

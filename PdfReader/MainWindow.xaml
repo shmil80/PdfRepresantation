@@ -12,35 +12,30 @@
         <CommandBinding CanExecute="CanZoomIn" Command="local:MainWindow.ZoomInCommand" Executed="IncreaseZoom" />
         <CommandBinding CanExecute="CanZoomOut" Command="local:MainWindow.ZoomOutCommand" Executed="DecreaseZoom" />
     </Window.CommandBindings>
-    <Grid>
-        <DockPanel>
-            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
-                <MenuItem Header="File">
-                    <MenuItem Header="Load" Command="local:MainWindow.LoadCommand" />
-                </MenuItem>
-                <MenuItem Header="View">
-                    <MenuItem Header="Zoom In" Command="local:MainWindow.ZoomInCommand" />
-                    <MenuItem Header="Zoom Out" Command="local:MainWindow.ZoomOutCommand" />
-                </MenuItem>
-            </Menu>
-            <StatusBar Visibility="Hidden" Name="StatusBarPanel" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
-                <StatusBarItem>
-                    <TextBlock Name="StatusBarText" />
-                </StatusBarItem>
-            </StatusBar>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto" Name="Scroller">
-                <DockPanel Name="Scale">
-                    <DockPanel.LayoutTransform>
-                        <ScaleTransform
-                            CenterX="0" CenterY="0"
-                            ScaleX="1"
-                            ScaleY="1" />
-                    </DockPanel.LayoutTransform>
-                    <StackPanel Name="RootContainer" HorizontalAlignment="Center"
-                                VerticalAlignment="Top" Orientation="Vertical" />
-                </DockPanel>
-            </ScrollViewer>
-        </DockPanel>
-    </Grid>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Load" Command="local:MainWindow.LoadCommand" />
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="Zoom In" Command="local:MainWindow.ZoomInCommand" />
+                <MenuItem Header="Zoom Out" Command="local:MainWindow.ZoomOutCommand" />
+            </MenuItem>
+        </Menu>
+        <StatusBar Name="StatusBarPanel" Visibility="Hidden" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+            <StatusBarItem>
+                <TextBlock Name="StatusBarText" />
+            </StatusBarItem>
+        </StatusBar>
+        <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+            <StackPanel Name="RootContainer" HorizontalAlignment="Center"
+                                VerticalAlignment="Top" Orientation="Vertical" >
+                <StackPanel.LayoutTransform>
+                    <ScaleTransform CenterX="0" CenterY="0" ScaleX="1" ScaleY="1" />
+                </StackPanel.LayoutTransform>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 </Window>
