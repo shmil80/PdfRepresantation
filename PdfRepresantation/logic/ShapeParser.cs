@@ -9,7 +9,7 @@ using Point = iText.Kernel.Geom.Point;
 
 namespace PdfRepresantation
 {
-    public class ShapeParser 
+    public class ShapeParser
     {
         public readonly IList<ShapeDetails> shapes = new List<ShapeDetails>();
         protected readonly PageContext pageContext;
@@ -30,18 +30,19 @@ namespace PdfRepresantation
             if (shapeOperation == ShapeOperation.None)
             {
                 clip = CreateClip(evenOddRule, lines);
-                if(Log.DebugSupported)
-                    Log.Debug("shape: clipping. "+clip);
+                if (Log.DebugSupported)
+                    Log.Debug("shape: clipping. " + clip);
             }
             else
             {
                 var shape = CreateShape(data, orderIndex, evenOddRule, shapeOperation, lines);
                 shapes.Add(shape);
-                if(Log.DebugSupported)
-                    Log.Debug("shape: "+shape);
+                if (Log.DebugSupported)
+                    Log.Debug("shape: " + shape);
                 clip = shape;
             }
-            if(data.IsPathModifiesClippingPath())
+
+            if (data.IsPathModifiesClippingPath())
                 pageContext.Processor.Clip(clip);
         }
 
@@ -59,7 +60,17 @@ namespace PdfRepresantation
         {
             var fillColor = ColorManager.GetColor(pageContext.Page, data.GetFillColor(),
                 data.GetGraphicsState().GetFillOpacity());
-            var lineWidth = data.GetLineWidth();
+            var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),
+                data.GetGraphicsState().GetStrokeOpacity());
+            var lineWidth = data.GetGraphicsState().GetLineWidth();
+            if (lineWidth != 1)
+            {
+                var ctm = data.GetCtm();
+                var xToX = Math.Abs(ctm.Get(Matrix.I11));
+                var yToY = Math.Abs(ctm.Get(Matrix.I22));
+                lineWidth *= (yToY + xToX) / 2;
+            }
+
             var shape = new ShapeDetails
             {
                 Order = orderIndex,
@@ -78,8 +89,6 @@ namespace PdfRepresantation
                     minX, minY, maxX, maxY);
             }
 
-            var strokeColor = ColorManager.GetColor(pageContext.Page, data.GetStrokeColor(),
-                data.GetGraphicsState().GetStrokeOpacity());
             var lineCap = data.GetLineCapStyle();
             var dash = data.GetLineDashPattern();
             shape.StrokeColor = strokeColor;
@@ -87,6 +96,7 @@ namespace PdfRepresantation
 
             return shape;
         }
+
         protected IEnumerable<ShapeLine> ConvertLines(Path path, Matrix ctm)
         {
             return from subpath in path.GetSubpaths()
@@ -113,6 +123,7 @@ namespace PdfRepresantation
 
             return result;
         }
+
         protected virtual ShapePoint ConvertPoint(Point p, Matrix ctm)
         {
             Vector vector = new Vector((float) p.x, (float) p.y, 1);

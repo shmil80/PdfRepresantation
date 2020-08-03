@@ -88,10 +88,10 @@ namespace PdfReader
             if (openFileDialog.ShowDialog() == true)
                 ShowPdf(openFileDialog.FileName);
         }
-
+        ScaleTransform Scale => (ScaleTransform)RootContainer.LayoutTransform;
         private void IncreaseZoom(object sender, ExecutedRoutedEventArgs e)
         {
-            var scale = (ScaleTransform) RootContainer.LayoutTransform;
+            var scale = Scale;
 
             scale.ScaleX += 0.1;
             scale.ScaleY += 0.1;
@@ -99,7 +99,7 @@ namespace PdfReader
 
         private void DecreaseZoom(object sender, ExecutedRoutedEventArgs e)
         {
-            var scale = (ScaleTransform)RootContainer.LayoutTransform;
+            var scale = Scale;
 
             scale.ScaleX -= 0.1;
             scale.ScaleY -= 0.1;
@@ -107,14 +107,12 @@ namespace PdfReader
 
         private void CanZoomIn(object sender, CanExecuteRoutedEventArgs e)
         {
-            var scale = (ScaleTransform)RootContainer.LayoutTransform;
-            e.CanExecute = scale.ScaleX <= 1.999;
+            e.CanExecute = Scale.ScaleX <= 1.999;
         }
 
         private void CanZoomOut(object sender, CanExecuteRoutedEventArgs e)
         {
-            var scale = (ScaleTransform)RootContainer.LayoutTransform;
-            e.CanExecute = scale.ScaleX >= 0.101;
+            e.CanExecute = Scale.ScaleX >= 0.101;
         }
 
 
