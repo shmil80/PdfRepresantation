@@ -43,7 +43,7 @@ namespace PdfRepresantation
                 return;
             if (Log.DebugSupported)
                 Log.Debug("line:" + string.Join("", lineTexts.Select(t => t.Value)));
-            var bottom = blocks.Min(b=>b.Bottom);
+            var bottom = blocks.Min(b => b.Bottom);
             var left = this.left;
             float rotation = blocks[0].Rotation;
             var item = new PdfTextLineDetails
@@ -63,7 +63,7 @@ namespace PdfRepresantation
                 var vector = RectangleRotated.RotateBack(rotation, left, bottom);
                 item.Rotation = rotation;
                 item.Bottom = pageContext.PageHeight - vector.Get(Vector.I2);
-                item.Left =  vector.Get(Vector.I1);
+                item.Left = vector.Get(Vector.I1);
             }
 
             item.Right = pageContext.PageWidth - item.Width - item.Left;
@@ -109,6 +109,11 @@ namespace PdfRepresantation
                         {
                             AddSpace(current);
                         }
+                    }
+                    else if (last.End > current.Start && last.End - last.Width * 0.9 > current.Start &&
+                             last.Value == current.Value && Math.Abs(last.FontSize - current.FontSize) < 0.1)
+                    {
+                        continue;
                     }
                 }
 

@@ -35,8 +35,8 @@ namespace PdfRepresantation.Test
                 if (file.Extension != ".pdf")
                     continue;
                 var name = Path.GetFileNameWithoutExtension(file.Name);
-//                if(name!="")
-//                    continue;
+                if(name!="f583eabb4c8141a95d61aa593d148f26.mail-6")
+                    continue;
                 var details = PdfDetailsFactory.Create(file.FullName);
                 var target = Path.Combine(targetDir, name + ".html");
                 paths.Add(target);
