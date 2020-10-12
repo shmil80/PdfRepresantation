@@ -87,7 +87,7 @@ namespace PdfRepresantation
             lines = new List<PdfTextLineDetails>();
             InitProperties();
             foreach (var current in group)
-            {
+           try {
                 if (string.IsNullOrWhiteSpace(current.Value) &&
                     (last == null || last.End >= current.End || string.IsNullOrWhiteSpace(last.Value)))
                     continue;
@@ -98,22 +98,28 @@ namespace PdfRepresantation
                         AddLine();
                         InitProperties();
                     }
-                    else if (last.End + last.SpaceWidth < current.Start)
+                    else
                     {
-                        if (last.End + last.SpaceWidth * 2 < current.Start)
+                        var distance = current.Start - last.End;
+                        var doubleSpace = distance > last.SpaceWidth * 2;
+                        var bigDistance = distance >= last.BigSpace;
+                        if (doubleSpace || bigDistance||distance > last.SpaceWidth)
                         {
-                            AddLine();
-                            InitProperties();
+                            if (doubleSpace)
+                            {
+                                AddLine();
+                                InitProperties();
+                            }
+                            else
+                            {
+                                AddSpace(current);
+                            }
                         }
-                        else
+                        else if (last.End > current.Start && last.End - last.Width * 0.9 > current.Start &&
+                                 last.Value == current.Value && Math.Abs(last.FontSize - current.FontSize) < 0.1)
                         {
-                            AddSpace(current);
+                            continue;
                         }
-                    }
-                    else if (last.End > current.Start && last.End - last.Width * 0.9 > current.Start &&
-                             last.Value == current.Value && Math.Abs(last.FontSize - current.FontSize) < 0.1)
-                    {
-                        continue;
                     }
                 }
 
@@ -126,7 +132,9 @@ namespace PdfRepresantation
                     top = current.Top;
                 last = current;
             }
-
+catch{Console.WriteLine("{0},{1}",current,last);
+    throw;
+}
             AddLine();
         }
 
