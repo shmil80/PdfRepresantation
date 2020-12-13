@@ -6,6 +6,11 @@ using iText.Kernel.Pdf;
 
 namespace PdfRepresantation
 {
+        
+    //there is a problem of numbers mixing in some pdfs
+    //so we try to finde tohse pfiles and correct the numbers.
+    //in fonts in general we have 2 dicts cid=>unicode,cid->glyph.
+    //pdf overwite this dict, and the problem here is that the dict of the numbers id wrong 
     public class NumberFixer
     {
         private int StartOfMixOfNumbers(FontProgram fontProgram)
@@ -31,6 +36,7 @@ namespace PdfRepresantation
             if (!(pdfFont is PdfType0Font) || buffer == null)
                 return;
 
+            //try to find the unicode cy the font tict.
             var cmapRepair = new CmapDict(buffer);
 
             if (Enumerable.Range('0', 10)
@@ -58,6 +64,7 @@ namespace PdfRepresantation
             }
         }
 
+        //try to find the error by finding numbers not in the correct order, and reorder them
         internal void ArrangeMixOfNumbersByGuessing(FontProgram fontProgram, PdfFont pdfFont)
         {
             if (NotInTheBugOfMixing(pdfFont))
@@ -91,6 +98,7 @@ namespace PdfRepresantation
             }
         }
 
+        //some characterisitics of the proclem that I found in all the examples
         private bool NotInTheBugOfMixing(PdfFont pdfFont)
         {
             if (!(pdfFont is PdfType0Font))
@@ -120,6 +128,8 @@ namespace PdfRepresantation
             return false;
         }
 
+        //normaly the cid of numbers is ordered. if x13:0,x14:1,x15:2...
+        //if it's a mess probably something is wrong
         private static bool IsMixOfNumbers(FontProgram fontProgram)
         {
             int val0 = -1;
