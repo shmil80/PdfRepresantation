@@ -47,7 +47,12 @@ namespace PdfRepresantation
                     }
 
                     break;
-                case 8: break;
+                case 8: 
+                    for (var i = 0; i < sampleData.Length; i ++)
+                    {
+                        result[i] = sampleData[i];
+                    }
+                    break;
                 case 12:
                     for (var i = 0; i < sampleData.Length; i += 3)
                     {
