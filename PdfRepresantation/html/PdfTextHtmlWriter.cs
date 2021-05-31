@@ -56,9 +56,9 @@ namespace PdfRepresantation
                 sb.Append("transform: rotate(").Append(Math.Round(line.Rotation.Value)).Append("deg);");
             sb.Append("right:").Append(Math.Round(line.Right, config.RoundDigits))
                 .Append("px;left:").Append(Math.Round(line.Left, config.RoundDigits))
-                .Append("px;top:").Append(Math.Round(line.Top, config.RoundDigits))
+                //.Append("px;top:").Append(Math.Round(line.Top, config.RoundDigits))
                 .Append("px;width:").Append(Math.Round(line.Width, config.RoundDigits))
-                .Append("px;height:").Append(Math.Round(line.Height, config.RoundDigits))
+                //.Append("px;height:").Append(Math.Round(line.Height, config.RoundDigits))
                 .Append("px;bottom:").Append(Math.Round(page.Height - line.Bottom, config.RoundDigits))
                 .Append("px\" >");
             PdfLinkResult link = null;

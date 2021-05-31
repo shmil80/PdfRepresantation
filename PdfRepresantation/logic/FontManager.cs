@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -77,24 +78,12 @@ namespace PdfRepresantation
         {
             var fontSize = textRenderInfo.GetFontSize();
             var height = text.Height;
-            if (fontSize > 0.99 && fontSize < 1.01)
-            {
-                LogWrongFontSize("no font size. take height of line:" + height);
 
-                return height * 1.0F;
-            }
 
             var ctm = textRenderInfo.GetGraphicsState().GetCtm();
-            var yToY = ctm.Get(Matrix.I22);
-            if (yToY > 0.99 && yToY < 1.01 && height > 0)
-            {
-                if (fontSize > height * 1.3)
-                {
-                    LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
-                    return height * 1.3F;
-                }
-            }
-            else
+            var ctm2= textRenderInfo.GetTextMatrix();
+            var yToY = ctm.Get(Matrix.I22)*ctm2.Get(Matrix.I22);
+            if (yToY <= 0.99 || yToY >= 1.01 || height < 0)
             {
                 if (yToY > 0)
                 {
@@ -104,11 +93,19 @@ namespace PdfRepresantation
                 else
                     fontSize *= -yToY;
 
-                if (fontSize > height * 2 || fontSize < height / 2)
-                {
-                    LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
-                    return height;
-                }
+//                if (fontSize > height * 2 || fontSize < height / 2)
+//                {
+//                    LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
+//                    return height;
+//                }
+            }
+            else
+            {
+//                if (fontSize > height * 1.5)
+//                {
+//                    LogWrongFontSize("big fontSize:" + fontSize + ". take height of line:" + height);
+//                    return height * 1.3F;
+//                }
             }
 
             return fontSize;

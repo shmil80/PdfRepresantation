@@ -31,12 +31,12 @@ namespace PdfRepresantation
         {
             foreach (var size in allLines
                 .SelectMany(l => l.Texts)
-                .Select(t => Math.Round(t.FontSize * 2))
+                .Select(t => Math.Round(t.FontSize * 10))
                 .Distinct())
             {
                 sb.Append(@"
-        .font-size-").Append((size / 2).ToString(formatNumInClassName))
-                    .Append("{font-size:").Append(size / 2).Append("px;}");
+        .font-size-").Append((size / 10).ToString(formatNumInClassName))
+                    .Append("{font-size:").Append(size / 10).Append("px;}");
             }
 
             sb.Append(@"
@@ -108,7 +108,7 @@ namespace PdfRepresantation
             if (text.Font.Bold)
                 sb.Append($@" bold");
             sb.Append(" font-size-")
-                .Append((Math.Round(text.FontSize * 2) / 2)
+                .Append((Math.Round(text.FontSize * 10) / 10)
                     .ToString(formatNumInClassName));
         }
     }
