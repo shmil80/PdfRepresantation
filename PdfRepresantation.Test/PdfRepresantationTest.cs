@@ -53,10 +53,10 @@ namespace PdfRepresantation.Test
 //                    case "860d723d1824259409de886fcb0f37db.mail-6":
 //                    case "402525445ca18c4dbf9f6bc954b85464.mail-7":
 //                    case "07b5e2cc5c94924926a0234942568ab7.mail-6":
-                       case "roi1":
+                       case "CV-Eden Sabti":
                         break;
-//                    default:
-//                        continue;
+                    default:
+                        continue;
                 }
 
                 var details = PdfDetailsFactory.Create(file.FullName);
