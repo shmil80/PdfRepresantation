@@ -22,7 +22,8 @@ namespace PdfRepresantation
                 case DeviceN _: return ColorManagerDeviceN.ManagerDeviceN;
                 case Indexed _: return ColorManagerIndexed.Instance;
                 case Separation _: return ColorManagerSeparation.ManagerSeparation;
-                default: throw new IndexOutOfRangeException();
+                case null:throw new ArgumentNullException("null-color");
+                default: throw new IndexOutOfRangeException(colorPfd.GetType().FullName);
             }
         }
 
@@ -58,6 +59,8 @@ namespace PdfRepresantation
 
         public static ColorDetails GetColor(PdfPage page, iText.Kernel.Colors.Color colorPfd, float alpha)
         {
+            if (colorPfd == null)
+                return null;
             var manager = GetManagerByType(colorPfd);
             return manager.GetColorDetails(page,colorPfd, alpha);
         }

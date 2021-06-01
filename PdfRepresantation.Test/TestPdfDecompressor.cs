@@ -11,7 +11,7 @@ namespace PdfRepresantation.Test
     public class TestPdfDecompressor
     {
         [TestMethod]
-        [DataRow("מאור_רומאני")]
+        [DataRow("bad-font")]
         public void Decompress(string name)
         {
             var file = $"Files/{name}.pdf";
